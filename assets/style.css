@@ -1,0 +1,26 @@
+#container .row:first-child {
+    min-height: 100vh !important;
+}
+
+#sidebar, #content {
+    padding: 30px;
+}
+
+#sidebar input, .rc-slider {
+    width: 100%;
+    margin-bottom: 30px;
+}
+
+.metrics {
+    margin: 0px !important;
+}
+
+.metrics .col-md-3 {
+    padding: 0px !important;
+}
+
+.metrics .col-md-3 div:first-child {
+    padding: 4px;
+    background-color: #f2f2f2;
+    border-bottom: 1px solid #666;
+}
