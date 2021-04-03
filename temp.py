@@ -38,17 +38,17 @@ def main():
             ),
             dcc.Slider(
                 id="term-slider",
-                min=1,
-                max=3,
-                marks={1: "short-term", 2: "mid-term", 3: "long-term"},
-                value=1,
+                min=4,
+                max=7,
+                marks={4: "short-term", 7: "long-term"},
+                value=4,
             ),
             html.Label("Enter a target return amount (week)"),
             dcc.Input(
                 id='target-return',
                 placeholder='$',
                 type='number',
-                value=''
+                value='1000'
             ),
             dbc.Button(
                 id='lookup-btn',
@@ -99,102 +99,151 @@ def main():
         Output("term4-metrics", "children"),
         Input("lookup-btn", "n_clicks"),
         State("ticker-select", "value"),
-        State("term-slider", "value"))
-    def update_content(n_clicks, ticker, term):
+        State("term-slider", "value"),
+        State("target-return", "value")
+    )
+    def update_content(n_clicks, ticker, term, rval):
+
+        # Function to calculate stats / metrics
+        def get_stats():
+            switch = {
+                0: ["Day", one_day],
+                1: ["Week", one_week],
+                2: ["2-Week", two_week],
+                3: ["Month", one_month],
+                4: ["6-Month", six_month],
+                5: ["Year", one_year],
+                6: ["5-Year", five_year]
+            }
+            resp_st = requests.get(f"https://www.alphavantage.co/query?function=TIME_SERIES_INTRADAY&symbol={ticker}&interval=1min&outputsize=full&apikey=9LVE9OGAKH31RPWM&datatype=json")
+            resp_lt = requests.get(f"https://www.alphavantage.co/query?function=TIME_SERIES_DAILY_ADJUSTED&symbol={ticker}&outputsize=full&apikey=9LVE9OGAKH31RPWM&datatype=json")
+            # Generator for each term
+            for t in range(term - 4, term):
+                interval = ""
+                vals, pos_vars, neg_vars, ret = ([] for i in range(4))
+                if t < 3:
+                    data = json.loads(resp_st.content)
+                    interval = "Time Series (1min)"
+                else:
+                    data = json.loads(resp_lt.content)
+                    interval = "Time Series (Daily)"
+                for i in data[interval]:
+                    if datetime.fromisoformat(i.split()[0]) < switch.get(t)[1]:
+                        break
+                    if "Daily" in interval:
+                        val = float(data[interval][i]["5. adjusted close"])
+                    else:
+                        o = data[interval][i]["1. open"]
+                        c = data[interval][i]["4. close"]
+                        val = (float(o) + float(c)) / 2
+                    vals.append(val)
+                if t == 0:
+                    vals = vals[:960]
+                if len(vals) > 0:               
+                    mean = statistics.mean(vals)
+                    rmean = statistics.mean(vals[0:round(len(vals)*.49)])
+                    lmean = statistics.mean(vals[round(len(vals)*.51):])
+                    trend = rmean / lmean
+                    high = max(vals)
+                    low = min(vals)
+                    lows = [i for i in vals if i < mean]
+                    highs = [i for i in vals if i > mean]
+                    lows_mean = statistics.mean(lows)
+                    highs_mean = statistics.mean(highs)
+                    std_dev = statistics.stdev(vals, mean)
+                    pos_var = highs_mean - mean
+                    neg_var = lows_mean - mean
+                    skew = ((pos_var + neg_var) / mean) / 2 + 1
+                    sell = statistics.mean([(mean * skew) + std_dev, statistics.mean(highs), mean + (pos_var / 2)]) * trend
+                    buy = statistics.mean([(mean * skew) - std_dev, statistics.mean(lows), mean + (neg_var / 2)]) * trend
+                    ret = {
+                        "": switch.get(t)[0],
+                        "Trend": trend,
+                        "Mean": mean,
+                        "High": high,
+                        "Low": low,
+                        "S.Dev": std_dev,
+                        "+ Var": pos_var,
+                        "- Var": neg_var,
+                        "Skew": skew
+                    }
+                    '''ret.append(html.Div(term))
+                    if trend > 1.01:
+                        ret.append(html.Div(f"Trend: {two_dec(trend)}", className="text-success"))
+                    elif trend < .99:
+                        ret.append(html.Div(f"Trend: {two_dec(trend)}", className="text-danger"))
+                    else:
+                        ret.append(html.Div(f"Trend: {two_dec(round(trend, 2))}"))
+                    ret.append(html.Div(f"Mean: ${two_dec(mean)}"))
+                    ret.append(html.Div(f"High: ${two_dec(high)}"))
+                    ret.append(html.Div(f"Low: ${two_dec(low)}"))
+                    ret.append(html.Div(f"S.Dev: ${two_dec(std_dev)} ({two_dec((std_dev / mean) * 100)}%)"))
+                    ret.append(html.Div(f"+ Var: ${two_dec(pos_var)} ({two_dec(((high / mean) - 1) * 100)}%)"))
+                    ret.append(html.Div(f"- Var: ${two_dec(neg_var)} ({two_dec(((low / mean) - 1) * 100)}%)"))
+                    ret.append(html.Div(f"Skew: {round(skew, 4)}"))
+                    ret.append(html.Div(f"Buy: ${two_dec(buy)}"))
+                    ret.append(html.Div(f"Sell: ${two_dec(sell)}"))
+                    ret.append(html.Div(f"Gain: ${two_dec(sell - buy)}"))
+                    ret.append(html.Div(f"Shares: {two_dec(rval / (sell - buy))}"))
+                    ret.append(html.Div(f"Invest: ${two_dec((rval / (sell - buy)) * buy)}"))
+                else:
+                    ret.append(html.Div("No Data"))
+                return ret'''
+                yield ret
+
+        # Function to prepare data for display in dash
+        def prep(term_vals):
+            ret = []
+            for i in term_vals:
+                if i == "":
+                    elem = html.Div(f"{term_vals.get(i)}")
+                elif i == "Trend" or i == "Skew":
+                    if term_vals.get(i) > 1.0:
+                        elem = html.Div(f"{i}: {four_dec(term_vals.get(i))}", className="text-success")
+                    elif term_vals.get(i) < 1.0:
+                        elem = html.Div(f"{i}: {four_dec(term_vals.get(i))}", className="text-danger")
+                    else:
+                        elem = html.Div(f"{i}: {four_dec(term_vals.get(i))}")
+                else:
+                    elem = html.Div(f"{i}: {two_dec(term_vals.get(i))}")
+                ret.append(elem)
+            return ret
+
+        # Function to produce data for Graph
+        def get_graph():
+            resp = requests.get(f"https://www.alphavantage.co/query?function=TIME_SERIES_DAILY_ADJUSTED&symbol={ticker}&outputsize=full&apikey=9LVE9OGAKH31RPWM&datatype=json")
+            data = json.loads(resp.content)
+            dates = []
+            values = []
+            #trends = []
+            for i in data["Time Series (Daily)"]:
+                close = float(data["Time Series (Daily)"][i]["5. adjusted close"])
+                dates.append(i)
+                values.append(close)
+            '''t = (values[-1] - values[0]) / len(values)
+            trends.append(values[0])
+            for j in range(len(values) - 1):
+                trends.append(trends[j] + t)
+            #return pd.DataFrame(dict(date=dates, value=values, trend=trends))'''
+            return pd.DataFrame(dict(date=dates, value=values))            
+        
         if len(ticker) > 0:
-            df = get_daily(ticker)
-            if term == 1:
-                terms = ["Day", "Week", "2-Week", "Month"]
-            if term == 2:
-                terms = ["Week", "Month", "6-Month", "Year"]
-            if term == 3:
-                terms = ["Month", "6-Month", "Year", "5-Year"]
-            term1_vals, term2_vals, term3_vals, term4_vals = (calc(ticker, terms[i]) for i in range(4))
+            df = get_graph()
+            term1_vals, term2_vals, term3_vals, term4_vals = get_stats()
             #fig = px.line(df, x='date', y=['value', 'trend'])
             fig = px.line(df, x='date', y='value')
-            fig.update_layout(title_text=ticker, title_x=0.5)
+            fig.update_layout(title_text=ticker.upper(), title_x=0.5)
             #fig.update_xaxes(type='category')
             fig.update_xaxes(range=[five_year, now])
-            #return fig, day_vals, week_vals, two_week_vals, month_vals, six_month_vals, year_vals
-            return fig, term1_vals, term2_vals, term3_vals, term4_vals
+            return fig, prep(term1_vals), prep(term2_vals), prep(term3_vals), prep(term4_vals)
         else:
-            return px.line(data_frame=None, x=None, y =None), "", "", "", ""
-
-    def calc(ticker, duration):
-        switch = {
-            "Day": one_day,
-            "Week": one_week,
-            "2-Week": two_week,
-            "Month": one_month,
-            "6-Month": six_month,
-            "Year": one_year,
-            "5-Year": five_year
-        }
-        resp, interval = ("" for i in range(2))
-        vals, pos_vars, neg_vars, ret = ([] for i in range(4))
-        if duration == "Day" or duration == "Week" or duration == "2-Week":
-            resp = requests.get(f"https://www.alphavantage.co/query?function=TIME_SERIES_INTRADAY&symbol={ticker}&interval=1min&outputsize=full&apikey=9LVE9OGAKH31RPWM&datatype=json")
-            interval = "Time Series (1min)"
-        else:
-            resp = requests.get(f"https://www.alphavantage.co/query?function=TIME_SERIES_DAILY_ADJUSTED&symbol={ticker}&outputsize=full&apikey=9LVE9OGAKH31RPWM&datatype=json")
-            interval = "Time Series (Daily)"
-        data = json.loads(resp.content)
-        for i in data[interval]:
-            if datetime.fromisoformat(i.split()[0]) < switch.get(duration):
-                break
-            if "Daily" in interval:
-                val = float(data[interval][i]["5. adjusted close"])
-            else:
-                o = data[interval][i]["1. open"]
-                c = data[interval][i]["4. close"]
-                val = (float(o) + float(c)) / 2
-            vals.append(val)
-        if duration == "Day":
-            vals = vals[:960]
-        if len(vals) > 0:
-            mean = statistics.mean(vals)
-            rmean = statistics.mean(vals[0:round(len(vals)*.1)])
-            lmean = statistics.mean(vals[round(len(vals)*.9):])
-            trend = rmean / lmean
-            high = max(vals)
-            low = min(vals)
-            std_dev = statistics.stdev(vals, mean)
-            ret.append(html.Div(duration))
-            if trend > 1.01:
-                ret.append(html.Div(f"Trend: {two_dec(trend)}", className="text-success"))
-            elif trend < .99:
-                ret.append(html.Div(f"Trend: {two_dec(trend)}", className="text-danger"))
-            else:
-                ret.append(html.Div(f"Trend: {two_dec(trend)}"))
-            ret.append(html.Div(f"Mean: ${two_dec(mean)}"))
-            ret.append(html.Div(f"High: ${two_dec(high)}"))
-            ret.append(html.Div(f"Low: ${two_dec(low)}"))
-            ret.append(html.Div(f"S.Dev: ${two_dec(std_dev)} ({two_dec((std_dev / mean) * 100)}%)"))
-            ret.append(html.Div(f"+ Var: ${two_dec(high - mean)} ({two_dec(((high / mean) - 1) * 100)}%)"))
-            ret.append(html.Div(f"- Var: ${two_dec(mean - low)} ({two_dec(((low / mean) - 1) * 100)}%)"))
-        else:
-            ret.append(html.Div("No Data"))
-        return ret
-
-    def get_daily(ticker):
-        resp = requests.get(f"https://www.alphavantage.co/query?function=TIME_SERIES_DAILY_ADJUSTED&symbol={ticker}&outputsize=full&apikey=9LVE9OGAKH31RPWM&datatype=json")
-        data = json.loads(resp.content)
-        dates = []
-        values = []
-        #trends = []
-        for i in data["Time Series (Daily)"]:
-            close = float(data["Time Series (Daily)"][i]["5. adjusted close"])
-            dates.append(i)
-            values.append(close)
-        '''t = (values[-1] - values[0]) / len(values)
-        trends.append(values[0])
-        for j in range(len(values) - 1):
-            trends.append(trends[j] + t)
-        #return pd.DataFrame(dict(date=dates, value=values, trend=trends))'''
-        return pd.DataFrame(dict(date=dates, value=values))
+            return px.line(data_frame=None, x=None, y=None), "", "", "", ""
 
     def two_dec(val):
-        return "{0:.2f}".format(val)
+        return "{0:.2f}".format(round(val, 2))
+
+    def four_dec(val):
+        return "{0:.4f}".format(round(val, 4))
     
     app.run_server(port='8080', debug=True)
 
