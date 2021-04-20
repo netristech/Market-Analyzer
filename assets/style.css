@@ -15,11 +15,11 @@
     margin: 0px !important;
 }
 
-.metrics .col-md-3 {
+.metrics .col-md-2 {
     padding: 0px !important;
 }
 
-.metrics .col-md-3 div:first-child {
+.metrics .col-md-2 div:first-child {
     padding: 4px;
     background-color: #f2f2f2;
     border-bottom: 1px solid #666;
