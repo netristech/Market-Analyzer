@@ -152,34 +152,8 @@ def main():
         Input("range-slider", "value"),
     )
     def update_graph(ticker, lt_data, scale):
-        '''def prepare_data():
-            dates, values, mas, tmas, tops, bottoms = ([] for i in range(6))
-            for i in data["Time Series (Daily)"]:
-                h = float(data["Time Series (Daily)"][i]["2. high"])
-                l = float(data["Time Series (Daily)"][i]["3. low"])
-                c = float(data["Time Series (Daily)"][i]["5. adjusted close"])
-                dates.append(i)
-                values.append(c)
-                mas.append((h + l) / 2)
-            for i in range(len(values)):
-                if i == len(values) - 1:
-                    tmas.append(values[i])
-                    tops.append(values[i])
-                    bottoms.append(values[i])
-                elif i + 10 > len(values) - 1:
-                    tmas.append(statistics.mean(values[i:]))
-                    tops.append(statistics.mean(values[i:]) + statistics.stdev(values[i:]) * 2)
-                    bottoms.append(statistics.mean(values[i:]) - statistics.stdev(values[i:]) * 2)
-                else:
-                    tmas.append(statistics.mean(values[i:i + 10]))              
-                    tops.append(statistics.mean(values[i:i + 10]) + statistics.stdev(values[i:i + 10]) * 2)
-                    bottoms.append(statistics.mean(values[i:i + 10]) - statistics.stdev(values[i:i + 10]) * 2)    
-            return pd.DataFrame(dict(date=dates, value=values, ma=mas, tma=tmas, top=tops, bottom=bottoms))'''
-
         if len(lt_data) > 0:
-            #data = json.loads(lt_data)
             df = pd.read_json(lt_data, orient='split')
-            #df = prepare_data()
             switch = {
                 4: [one_month, 30],
                 5: [six_month, 182],
@@ -243,10 +217,8 @@ def main():
                     data = pd.read_json(st_data, orient='split')
                 else:
                     data = pd.read_json(lt_data, orient='split')
-                    #weigh = np.arange(1,13)
-                    #wma12 = data['value'].rolling(12).apply(lambda x: np.dot(x, weight) / wight.sum(), raw=True)
                 vals = data['value'].tolist()[:switch.get(t)[1]]
-                if len(vals) > 0:               
+                if len(vals) > 0:              
                     mean = statistics.fmean(vals)
                     rval = statistics.fmean(vals[0:round(len(vals)*.25)])
                     lval = statistics.fmean(vals[round(len(vals)*.75):])
@@ -263,7 +235,13 @@ def main():
                     skew = ((pos_var + neg_var) / mean) + 1
                     #sell = statistics.mean([(mean * skew) + std_dev, statistics.mean(highs), mean + pos_var]) * trend
                     #buy = statistics.mean([(mean * skew) - std_dev, statistics.mean(lows), mean + neg_var]) * trend
-                    q1 = statistics.fmean(vals[:round(len(vals)*.25)])
+                    wvals = []
+                    d = 0
+                    for i in range(len(vals)):
+                        wvals.append(vals[i] * (len(vals) - i))
+                        d += len(vals) - i
+                    wma = sum(wvals) / d
+                    '''q1 = statistics.fmean(vals[:round(len(vals)*.25)])
                     q2 = statistics.fmean(vals[round(len(vals)*.25):round(len(vals)*.5)])
                     q3 = statistics.fmean(vals[round(len(vals)*.5):round(len(vals)*.75)])
                     q4 = statistics.fmean(vals[round(len(vals)*.75):])
@@ -279,7 +257,7 @@ def main():
                         if wma3 / wma2 < wma2 / wma1:
                             sig = 'wait'
                         else:
-                            sig = 'buy'
+                            sig = 'buy'''
                     ret = {
                         "Title": switch.get(t)[0],
                         "Trend": trend,
@@ -290,8 +268,8 @@ def main():
                         "+ Var": pos_var,
                         "- Var": neg_var,
                         "Skew": skew,
-                        "WMA": wma1,
-                        "Signal": sig,
+                        "WMA": wma,
+                        #"Signal": sig,
                     }
                 yield ret
 
@@ -317,9 +295,44 @@ def main():
         
         if len(lt_data) > 0 and len(st_data) > 0:
             term1_vals, term2_vals, term3_vals, term4_vals, term5_vals, term6_vals = get_stats()
+
             return prep(term1_vals), prep(term2_vals), prep(term3_vals), prep(term4_vals), prep(term5_vals), prep(term6_vals)
         else:
             return "", "", "", "", "", ""
+
+    def get_wma(vals, dur):
+        wvals = []
+        weights = [i + 1 for i in range(dur)][::-1]
+        for i in range(len(vals)):
+            if i + dur >= len(vals):
+                r = len(vals) - i
+                w = sum([vals[-r:][x] * weights[-r:][x] for x in range(r)]) / sum(weights[-r:])
+            else:
+                w = sum([vals[i:i+dur][x] * weights[x] for x in range(dur)]) / sum(weights)
+            wvals.append(w)
+        return wvals
+        
+    def get_sma(vals, dur):
+        svals = []
+        for i in range(len(vals)):
+            if i + dur >= len(vals):
+                r = len(vals) - i
+                s = sum(vals[-r:]) / len(vals[-r:])
+            else:
+                s = sum(vals[i:i+dur]) / dur
+            svals.append(s)
+        return svals
+
+    def get_obv(vals, vols):
+        ovals = vals[::-1]
+        ovols = vols[::-1]
+        obvals = [ovols[0]]
+        for i in range(len(ovals)-1):
+            if ovals[i+1] > ovals[i]:
+                obvals.append(obvals[i] + ovols[i+1])
+            else:
+                obvals.append(obvals[i] - ovols[i+1])
+        return obvals[::-1]
 
     def two_dec(val):
         return "{0:.2f}".format(round(val, 2))
