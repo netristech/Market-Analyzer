@@ -336,8 +336,9 @@ def main():
         return obvals[::-1]
 
     def get_lr(df):
-        k, d = np.polyfit(df['date'], df['value'], 1)
-        return k * df['date'] + d
+        df['timestamp'] = pd.to_datetime(df['date']).apply(lambda date : date.toordinal())
+        k, d = np.polyfit(df['timestamp'], df['value'], 1)
+        return k * df['timestamp'] + d
 
     def two_dec(val):
         return "{0:.2f}".format(round(val, 2))
