@@ -11,7 +11,7 @@ from dash.dependencies import Input, Output, State
 import plotly.express as px
 #import plotly.graph_objs as go
 import pandas as pd
-#import numpy as np
+import numpy as np
 from datetime import datetime
 from datetime import timedelta
 
@@ -172,6 +172,7 @@ def main():
             fig.add_scatter(x=df['date'], y=df['tma'], mode='lines', line_color='rgba(255,179,66,0.8)', line_shape='spline')
             fig.add_scatter(x=df['date'], y=df['top'], mode='lines', line_color='rgba(255,80,0,0.8)', line_shape='spline')
             fig.add_scatter(x=df['date'], y=df['bottom'], mode='lines', line_color='rgba(80,255,0,0.8)', line_shape='spline')'''
+            fig.add_scatter(x=df['date'], y=get_lr(df), mode='lines', line_color='rgba(80,255,0,0.8)')
             fig.add_scatter(x=pd.concat([df['date'], df['date'][::-1]]), y=pd.concat([df['high'], df['low'][::-1]]), mode='lines', line_color='rgba(80,120,255,1)', line_shape='spline', fill='toself', fillcolor='rgba(80,120,255,0.5)', hoveron='points', name='Range')
             fig.update_xaxes(range=[switch.get(scale)[0], now])
             fig.update_yaxes(range=[min(df['low'].tolist()[:switch.get(scale)[1]]), max(df['high'].tolist()[:switch.get(scale)[1]])])
@@ -333,6 +334,10 @@ def main():
             else:
                 obvals.append(obvals[i] - ovols[i+1])
         return obvals[::-1]
+
+    def get_lr(df):
+        k, d = np.polyfit(df['date'], df['value'], 1)
+        return k * df['date'] + d
 
     def two_dec(val):
         return "{0:.2f}".format(round(val, 2))
