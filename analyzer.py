@@ -199,7 +199,7 @@ def main():
         State("term-slider", "value"),
         #State("target-return", "value")
     )
-    def update_content(st_data, lt_data, term, rval):
+    def update_content(st_data, lt_data, term):
         # Function to calculate stats / metrics
         def get_stats():
             switch = {
