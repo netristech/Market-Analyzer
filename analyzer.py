@@ -32,27 +32,27 @@ def main():
 
     sidebar = dbc.Col([
         dbc.FormGroup([
-            html.Label("Enter a symbol to analyze."),
+            html.Label("Enter symbol(s) to analyze."),
             dcc.Input(
                 id='ticker-select',
                 placeholder='Enter symbol',
                 type='text',
                 value=''
             ),
-            #dcc.Slider(
-                #id="term-slider",
-                #min=4,
-                #max=7,
-                #marks={4: "short-term", 7: "long-term"},
-                #value=4,
-            #),
-            html.Label("Enter a target return amount (month)"),
+            dcc.Slider(
+                id="term-slider",
+                min=4,
+                max=7,
+                marks={4: "short-term", 7: "long-term"},
+                value=4,
+            ),
+            '''html.Label("Enter a target return amount (month)"),
             dcc.Input(
                 id='target-return',
                 placeholder='$',
                 type='number',
                 value='1000'
-            ),
+            ),'''
             dbc.Button(
                 id='lookup-btn',
                 n_clicks=0,
@@ -81,20 +81,20 @@ def main():
             n_intervals=0
         ),
         dcc.Graph(id="time-series-chart"),
-        dcc.Slider(
+        '''dcc.Slider(
             id="range-slider",
             min=4,
             max=8,
             marks={4: "1-month", 5: "6-month", 6: "1-year", 7:"2-year", 8:"5-year"},            
             value=5,
-        ),        
+        ),'''       
         dbc.Row([
-            dbc.Col(id="term1-metrics", md=2),
-            dbc.Col(id="term2-metrics", md=2),
-            dbc.Col(id="term3-metrics", md=2),
-            dbc.Col(id="term4-metrics", md=2),
-            dbc.Col(id="term5-metrics", md=2),
-            dbc.Col(id="term6-metrics", md=2),
+            dbc.Col(id="term1-metrics", md=3),
+            dbc.Col(id="term2-metrics", md=3),
+            dbc.Col(id="term3-metrics", md=3),
+            dbc.Col(id="term4-metrics", md=3),
+            #dbc.Col(id="term5-metrics", md=2),
+            #dbc.Col(id="term6-metrics", md=2),
         ], className="metrics")
     ], md=10, id="content")
     
@@ -149,7 +149,7 @@ def main():
         Output("time-series-chart", "figure"),
         Input("ticker", "children"),
         Input("lt-data", "children"),
-        Input("range-slider", "value"),
+        #Input("range-slider", "value"),
     )
     def update_graph(ticker, lt_data, scale):
         if len(lt_data) > 0:
@@ -186,12 +186,12 @@ def main():
         Output("term2-metrics", "children"),
         Output("term3-metrics", "children"),
         Output("term4-metrics", "children"),
-        Output("term5-metrics", "children"),
-        Output("term6-metrics", "children"),
+        #Output("term5-metrics", "children"),
+        #Output("term6-metrics", "children"),
         Input("st-data", "children"),
         Input("lt-data", "children"),
-        Input("range-slider", "value"),
-        #State("term-slider", "value"),
+        #Input("range-slider", "value"),
+        State("term-slider", "value"),
         State("target-return", "value")
     )
     def update_content(st_data, lt_data, term, rval):
@@ -295,9 +295,9 @@ def main():
             return ret        
         
         if len(lt_data) > 0 and len(st_data) > 0:
-            term1_vals, term2_vals, term3_vals, term4_vals, term5_vals, term6_vals = get_stats()
+            term1_vals, term2_vals, term3_vals, term4_vals = get_stats()
 
-            return prep(term1_vals), prep(term2_vals), prep(term3_vals), prep(term4_vals), prep(term5_vals), prep(term6_vals)
+            return prep(term1_vals), prep(term2_vals), prep(term3_vals), prep(term4_vals)
         else:
             return "", "", "", "", "", ""
 
