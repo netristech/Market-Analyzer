@@ -46,13 +46,13 @@ def main():
                 marks={4: "short-term", 7: "long-term"},
                 value=4,
             ),
-            '''html.Label("Enter a target return amount (month)"),
-            dcc.Input(
-                id='target-return',
-                placeholder='$',
-                type='number',
-                value='1000'
-            ),'''
+            #html.Label("Enter a target return amount (month)"),
+            #dcc.Input(
+                #id='target-return',
+                #placeholder='$',
+                #type='number',
+                #value='1000'
+            #),
             dbc.Button(
                 id='lookup-btn',
                 n_clicks=0,
@@ -81,13 +81,13 @@ def main():
             n_intervals=0
         ),
         dcc.Graph(id="time-series-chart"),
-        '''dcc.Slider(
-            id="range-slider",
-            min=4,
-            max=8,
-            marks={4: "1-month", 5: "6-month", 6: "1-year", 7:"2-year", 8:"5-year"},            
-            value=5,
-        ),'''       
+        #dcc.Slider(
+            #id="range-slider",
+            #min=4,
+            #max=8,
+            #marks={4: "1-month", 5: "6-month", 6: "1-year", 7:"2-year", 8:"5-year"},            
+            #value=5,
+        #),       
         dbc.Row([
             dbc.Col(id="term1-metrics", md=3),
             dbc.Col(id="term2-metrics", md=3),
