@@ -42,8 +42,8 @@ def main():
             dcc.Slider(
                 id="term-slider",
                 min=4,
-                max=7,
-                marks={4: "short-term", 7: "long-term"},
+                max=6,
+                marks={4: "short-term", 6: "long-term"},
                 value=4,
             ),
             #html.Label("Enter a target return amount (month)"),
@@ -149,17 +149,22 @@ def main():
         Output("time-series-chart", "figure"),
         Input("ticker", "children"),
         Input("lt-data", "children"),
-        #Input("range-slider", "value"),
+        Input("term-slider", "value"),
     )
     def update_graph(ticker, lt_data, scale):
         if len(lt_data) > 0:
             df = pd.read_json(lt_data, orient='split')
-            switch = {
+            '''switch = {
                 4: [one_month, 30],
                 5: [six_month, 182],
                 6: [one_year, 365],
                 7: [two_year, 730],
                 8: [five_year, 1825],
+            }'''
+            switch = {
+                4: [six_month, 182],
+                5: [one_year, 365],
+                6: [five_year, 1825],
             }
             fig = px.line(df, x='date', y='value')
             fig.update_traces(line_color='rgba(0,0,0,0.5)')
@@ -192,7 +197,7 @@ def main():
         Input("lt-data", "children"),
         #Input("range-slider", "value"),
         State("term-slider", "value"),
-        State("target-return", "value")
+        #State("target-return", "value")
     )
     def update_content(st_data, lt_data, term, rval):
         # Function to calculate stats / metrics
