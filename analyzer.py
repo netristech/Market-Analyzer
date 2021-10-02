@@ -177,7 +177,7 @@ def main():
             fig.add_scatter(x=df['date'], y=df['tma'], mode='lines', line_color='rgba(255,179,66,0.8)', line_shape='spline')
             fig.add_scatter(x=df['date'], y=df['top'], mode='lines', line_color='rgba(255,80,0,0.8)', line_shape='spline')
             fig.add_scatter(x=df['date'], y=df['bottom'], mode='lines', line_color='rgba(80,255,0,0.8)', line_shape='spline')'''
-            fig.add_scatter(x=df['date'], y=get_lr(df), mode='lines', line_color='rgba(80,255,0,0.8)')
+            fig.add_scatter(x=df['date'], y=get_lr(df, switch.get(scale)[1]), mode='lines', line_color='rgba(80,255,0,0.8)')
             fig.add_scatter(x=pd.concat([df['date'], df['date'][::-1]]), y=pd.concat([df['high'], df['low'][::-1]]), mode='lines', line_color='rgba(80,120,255,1)', line_shape='spline', fill='toself', fillcolor='rgba(80,120,255,0.5)', hoveron='points', name='Range')
             fig.update_xaxes(range=[switch.get(scale)[0], now])
             fig.update_yaxes(range=[min(df['low'].tolist()[:switch.get(scale)[1]]), max(df['high'].tolist()[:switch.get(scale)[1]])])
@@ -213,11 +213,11 @@ def main():
                 7: ["5-Year", 1825]
             }
             # Generator for each term
-            if term < 6:
-                r = 6
+            if term < 4:
+                r = 4
             else:
                 r = term
-            for t in range(r - 6, r):
+            for t in range(r - 4, r):
                 vals, highs, lows, ret = ([] for i in range(4))
                 if t < 3:
                     data = pd.read_json(st_data, orient='split')
@@ -304,7 +304,7 @@ def main():
 
             return prep(term1_vals), prep(term2_vals), prep(term3_vals), prep(term4_vals)
         else:
-            return "", "", "", "", "", ""
+            return "", "", "", ""
 
     def get_wma(vals, dur):
         wvals = []
@@ -340,10 +340,10 @@ def main():
                 obvals.append(obvals[i] - ovols[i+1])
         return obvals[::-1]
 
-    def get_lr(df):
-        df['timestamp'] = pd.to_datetime(df['date']).apply(lambda date : date.toordinal())
-        k, d = np.polyfit(df['timestamp'], df['value'], 1)
-        return k * df['timestamp'] + d
+    def get_lr(df, scale):
+        x = pd.to_datetime(df['date'][:scale]).apply(lambda date : date.toordinal())
+        k, d = np.polyfit(x[:scale], df['value'][:scale], 1)
+        return k * x + d
 
     def two_dec(val):
         return "{0:.2f}".format(round(val, 2))
