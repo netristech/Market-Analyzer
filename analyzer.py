@@ -133,9 +133,9 @@ def main():
                     st_vols.append(data_st["Time Series (1min)"][i]["5. volume"])
                 for i in data_lt["Time Series (Daily)"]:
                     lt_dates.append(i)
-                    spread = (data_lt["Time Series (Daily)"][i]["2. high"] - data_lt["Time Series (Daily)"][i]["3. low"]) / 2
-                    highs.append(data_lt["Time Series (Daily)"][i]["5. adjusted close"] + spread)
-                    lows.append(data_lt["Time Series (Daily)"][i]["5. adjusted close"] - spread)
+                    #spread = (data_lt["Time Series (Daily)"][i]["2. high"] - data_lt["Time Series (Daily)"][i]["3. low"]) / 2
+                    highs.append(data_lt["Time Series (Daily)"][i]["2. high"])
+                    lows.append(data_lt["Time Series (Daily)"][i]["3. low"])
                     lt_vals.append(data_lt["Time Series (Daily)"][i]["5. adjusted close"])
                     lt_vols.append(data_lt["Time Series (Daily)"][i]["6. volume"])     
                 st = pd.DataFrame(dict(date=st_dates, value=st_vals, vol=st_vols))
@@ -186,10 +186,10 @@ def main():
              
     @app.callback(
         #Output("time-series-chart", "figure"),
-        Output("term1-metrics", "children"),
-        Output("term2-metrics", "children"),
-        Output("term3-metrics", "children"),
-        Output("term4-metrics", "children"),
+        Output("signal", "children"),
+        Output("buy-price", "children"),
+        Output("sell-price", "children"),
+        Output("return", "children"),
         Input("st-data", "children"),
         Input("lt-data", "children"),
         #Input("range-slider", "value"),
