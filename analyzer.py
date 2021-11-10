@@ -89,12 +89,10 @@ def main():
             #value=5,
         #),       
         dbc.Row([
-            dbc.Col(id="term1-metrics", md=3),
-            dbc.Col(id="term2-metrics", md=3),
-            dbc.Col(id="term3-metrics", md=3),
-            dbc.Col(id="term4-metrics", md=3),
-            #dbc.Col(id="term5-metrics", md=2),
-            #dbc.Col(id="term6-metrics", md=2),
+            dbc.Col(id="signal", md=3),
+            dbc.Col(id="buy-price", md=3),
+            dbc.Col(id="sell-price", md=3),
+            dbc.Col(id="return", md=3),
         ], className="metrics")
     ], md=10, id="content")
     
@@ -135,10 +133,11 @@ def main():
                     st_vols.append(data_st["Time Series (1min)"][i]["5. volume"])
                 for i in data_lt["Time Series (Daily)"]:
                     lt_dates.append(i)
-                    highs.append(data_lt["Time Series (Daily)"][i]["2. high"])
-                    lows.append(data_lt["Time Series (Daily)"][i]["3. low"])
+                    spread = (data_lt["Time Series (Daily)"][i]["2. high"] - data_lt["Time Series (Daily)"][i]["3. low"]) / 2
+                    highs.append(data_lt["Time Series (Daily)"][i]["5. adjusted close"] + spread)
+                    lows.append(data_lt["Time Series (Daily)"][i]["5. adjusted close"] - spread)
                     lt_vals.append(data_lt["Time Series (Daily)"][i]["5. adjusted close"])
-                    lt_vols.append(data_lt["Time Series (Daily)"][i]["6. volume"])                  
+                    lt_vols.append(data_lt["Time Series (Daily)"][i]["6. volume"])     
                 st = pd.DataFrame(dict(date=st_dates, value=st_vals, vol=st_vols))
                 lt = pd.DataFrame(dict(date=lt_dates, value=lt_vals, vol=lt_vols, high=highs, low=lows))
                 return st.to_json(date_format='iso', orient='split'), lt.to_json(date_format='iso', orient='split'), ticker.upper()
@@ -191,8 +190,6 @@ def main():
         Output("term2-metrics", "children"),
         Output("term3-metrics", "children"),
         Output("term4-metrics", "children"),
-        #Output("term5-metrics", "children"),
-        #Output("term6-metrics", "children"),
         Input("st-data", "children"),
         Input("lt-data", "children"),
         #Input("range-slider", "value"),
@@ -247,23 +244,6 @@ def main():
                         wvals.append(vals[i] * (len(vals) - i))
                         d += len(vals) - i
                     wma = sum(wvals) / d
-                    '''q1 = statistics.fmean(vals[:round(len(vals)*.25)])
-                    q2 = statistics.fmean(vals[round(len(vals)*.25):round(len(vals)*.5)])
-                    q3 = statistics.fmean(vals[round(len(vals)*.5):round(len(vals)*.75)])
-                    q4 = statistics.fmean(vals[round(len(vals)*.75):])
-                    wma1 = sum([q1*4,q2*3,q3*2,q4]) / 10
-                    wma2 = sum([q1*3,q2*2,q3]) / 6
-                    wma3 = sum([q1*2,q2]) / 3
-                    if wma3 > wma1:
-                        if wma3 / wma2 > wma2 / wma1:
-                            sig = 'hold'
-                        else:
-                            sig = 'sell'
-                    else:
-                        if wma3 / wma2 < wma2 / wma1:
-                            sig = 'wait'
-                        else:
-                            sig = 'buy'''
                     ret = {
                         "Title": switch.get(t)[0],
                         "Trend": trend,
