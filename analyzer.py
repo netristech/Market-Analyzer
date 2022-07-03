@@ -36,6 +36,22 @@ def main():
     one_week = now - timedelta(minutes=10080)
 #   one_day = now - timedelta(minutes=5760)
 
+    @app.callback(
+        Output("alert-fade", "is_open"),
+        [State("alert-fade", "is_open")],
+    )
+    def toggle_alert(n, is_open):
+        if n:
+            return not is_open
+        return is_open
+
+    # Display errors in modal
+    def display_error(err):
+        return dbc.Alert([
+            f"Invalid input. Error was: {err}",
+        ], id="alert-fade", color="danger", n_clicks=0,)
+
+
     # Get longterm time-series data from API and format into Pandas dataframe
     def get_ltdata(symbol):
         try:
