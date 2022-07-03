@@ -36,6 +36,69 @@ def main():
     one_week = now - timedelta(minutes=10080)
 #   one_day = now - timedelta(minutes=5760)
 
+    sidebar = dbc.Col([
+        dbc.FormGroup([
+            html.Label("Enter symbol(s) to analyze."),
+            dcc.Input(
+                id='ticker-select',
+                placeholder='Enter symbol',
+                type='text',
+                value=''
+            ),
+            dcc.Slider(
+                id="term-slider",
+                min=4,
+                max=6,
+                marks={4: "short-term", 6: "long-term"},
+                value=4,
+            ),
+            dbc.Button(
+                id='lookup-btn',
+                n_clicks=0,
+                children='Analyze',
+                color='primary',
+                block=True
+            ),
+            dbc.Button(
+                id='save-btn',
+                n_clicks=0,
+                children='Save as Default',
+                color='secondary',
+                block=True
+            ),
+        ])
+    ], md=2, id="sidebar", className="bg-dark text-white")
+
+    content = dbc.Col([
+        html.Div(id="data", style={"display": "none"}),
+        html.Div(id="ticker", style={"display": "none"}),
+        html.H3(id="time", className="text-center"),
+        dcc.Interval(
+            id="interval-component",
+            interval=60000,
+            n_intervals=0
+        ),
+        dcc.Graph(id="time-series-chart"),      
+        dbc.Row([
+            dbc.Col(id="signal", md=3),
+            dbc.Col(id="buy-price", md=3),
+            dbc.Col(id="sell-price", md=3),
+            dbc.Col(id="return", md=3),
+        ], className="metrics")
+    ], md=10, id="content")
+    
+    app.layout = dbc.Container([
+        dbc.Row([sidebar, content],
+        className="text-dark")
+    ], id="container", fluid=True)
+
+    @app.callback(
+        Output("time", "children"),
+        Input("interval-component", "n_intervals")
+    )
+    def update_time(n):
+        return datetime.now().strftime('%m/%d/%Y %H:%M') 
+
     @app.callback(
         Output("alert-fade", "is_open"),
         [State("alert-fade", "is_open")],
@@ -52,8 +115,14 @@ def main():
         ], id="alert-fade", color="danger", n_clicks=0,)
 
 
-    # Get longterm time-series data from API and format into Pandas dataframe
-    def get_ltdata(symbol):
+    # Get longterm time-series data from API
+    @app.callback(
+        Output("data", "children"),
+        Output("ticker", "children"),
+        Input("lookup-btn", "n_clicks"),
+        State("ticker-select", "value"),
+    )    
+    def get_data(symbol):
         try:
             if len(symbol) < 1 or len(symbol) > 6:
                 raise ValueError(f"Invalid string length for {symbol}: must be between 1 and 6 characters")
