@@ -99,23 +99,18 @@ def main():
     def update_time(n):
         return datetime.now().strftime('%m/%d/%Y %H:%M') 
 
+    # Display error in bootstrap alert
     @app.callback(
         Output("alert-fade", "is_open"),
-        [State("alert-fade", "is_open")],
+        State("alert-fade", "is_open"),
     )
-    def toggle_alert(n, is_open):
-        if n:
-            return not is_open
-        return is_open
-
-    # Display errors in modal
     def display_error(err):
-        return dbc.Alert([
+        alert = dbc.Alert([
             f"Invalid input. Error was: {err}",
         ], id="alert-fade", color="danger", n_clicks=0,)
 
 
-    # Get longterm time-series data from API
+    # Get time-series data from API
     @app.callback(
         Output("data", "children"),
         Output("ticker", "children"),
@@ -135,6 +130,8 @@ def main():
             display_error(err)
         except:
             display_error("Invalid ticker symbol")
+
+    app.run_server(port='8080', debug=True)
 
 if __name__ == "__main__":
     main()
