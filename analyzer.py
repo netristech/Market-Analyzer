@@ -65,13 +65,13 @@ def main():
             dismissable=True
         ),
         html.Div(id="data"),
-        html.Div(id="ticker"),
-        html.H3(id="time", className="text-center"),
         dcc.Interval(
             id="interval-component",
             interval=60000,
             n_intervals=0
-        ),
+        ),        
+        html.Div(id="ticker"),
+        html.H3(id="time", className="text-center"),
         #dcc.Graph(id="time-series-chart"),      
         #dbc.Row([
         #    dbc.Col(id="signal", md=3),
@@ -90,23 +90,25 @@ def main():
         Input("interval-component", "n_intervals")
     )
     def update_time(n):
-        return datetime.now().strftime('%m/%d/%Y %H:%M')
+        return datetime.now().strftime('%m/%d/%Y %H:%M')       
 
     # Get time-series data from API and update Dash Bootstrap components
     @app.callback(
         Output("data", "children"),
+        Output("alert", "children"),
+        Output("alert", "is_open"),
         Input("lookup-btn", "n_clicks"),
         State("ticker-select", "value"),
     )    
     def get_data(n_clicks, ticker):
         if len(ticker) < 1 or len(ticker) > 6:
-            return f"Invalid string length for {ticker}: must be between 1 and 6 characters"
+            return dash.no_update, f"Invalid string length ({ticker}): must be between 1 and 6 characters", True
         if not ticker.isalpha():
-            return f"Invalid input type for {ticker}: must be letters only"    
+            return dash.no_update, f"Invalid input type ({ticker}): must be letters only", True
         try:
-            return format_data(requests.get(f"https://www.alphavantage.co/query?function=TIME_SERIES_WEEKLY_ADJUSTED&symbol={ticker}&outputsize=full&apikey=9LVE9OGAKH31RPWM&datatype=json"))
+            return format_data(requests.get(f"https://www.alphavantage.co/query?function=TIME_SERIES_WEEKLY_ADJUSTED&symbol={ticker}&outputsize=full&apikey=9LVE9OGAKH31RPWM&datatype=json")), dash.no_update, False
         except:
-            return f"Invalid symbol: {ticker}"
+            return dash.no_update, f"Invalid symbol: {ticker}", True
 
     # Format data and return as Pandas DataFram object             
     def format_data(resp):
