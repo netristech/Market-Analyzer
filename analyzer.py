@@ -34,7 +34,6 @@ def main():
     one_month = now - timedelta(days=30)
     two_week = now - timedelta(minutes=20160)
     one_week = now - timedelta(minutes=10080)
-#   one_day = now - timedelta(minutes=5760)
 
     sidebar = dbc.Col([
         dbc.FormGroup([
@@ -45,13 +44,6 @@ def main():
                 type='text',
                 value=''
             ),
-            dcc.Slider(
-                id="term-slider",
-                min=4,
-                max=6,
-                marks={4: "short-term", 6: "long-term"},
-                value=4,
-            ),
             dbc.Button(
                 id='lookup-btn',
                 n_clicks=0,
@@ -59,32 +51,33 @@ def main():
                 color='primary',
                 block=True
             ),
-            dbc.Button(
-                id='save-btn',
-                n_clicks=0,
-                children='Save as Default',
-                color='secondary',
-                block=True
-            ),
         ])
     ], md=2, id="sidebar", className="bg-dark text-white")
 
     content = dbc.Col([
-        html.Div(id="data", style={"display": "none"}),
-        html.Div(id="ticker", style={"display": "none"}),
+        #html.Div(id="data", style={"display": "none"}),
+        #html.Div(id="ticker", style={"display": "none"}),
+        dbc.Alert(
+            "Invalid input. Error was: ",
+            id="alert",
+            color="danger",
+            is_open=False,
+            dismissable=True
+        ),
+        html.Div(id="data"),
+        html.Div(id="ticker"),
         html.H3(id="time", className="text-center"),
         dcc.Interval(
             id="interval-component",
             interval=60000,
             n_intervals=0
         ),
-        dcc.Graph(id="time-series-chart"),      
-        dbc.Row([
-            dbc.Col(id="signal", md=3),
-            dbc.Col(id="buy-price", md=3),
-            dbc.Col(id="sell-price", md=3),
-            dbc.Col(id="return", md=3),
-        ], className="metrics")
+        #dcc.Graph(id="time-series-chart"),      
+        #dbc.Row([
+        #    dbc.Col(id="signal", md=3),
+        #    dbc.Col(id="buy-price", md=3),
+        #    dbc.Col(id="sell-price", md=3),
+        #], className="metrics")
     ], md=10, id="content")
     
     app.layout = dbc.Container([
@@ -99,33 +92,30 @@ def main():
     def update_time(n):
         return datetime.now().strftime('%m/%d/%Y %H:%M')
 
-    # Get time-series data from API
+    # Get time-series data from API and update Dash Bootstrap components
     @app.callback(
         Output("data", "children"),
-        Output("ticker", "children"),
-        Output("alert", "is_open"),
         Input("lookup-btn", "n_clicks"),
         State("ticker-select", "value"),
-        State("alert", "is_open"),
     )    
-    def get_input(n_clicks, symbol):
-        def display_error(err):
-            return dbc.Alert([
-                f"Invalid input. Error was: {err}",
-            ], id="alert", color="danger", is_open=True)
-            
+    def get_data(n_clicks, ticker):
+        if len(ticker) < 1 or len(ticker) > 6:
+            return f"Invalid string length for {ticker}: must be between 1 and 6 characters"
+        if not ticker.isalpha():
+            return f"Invalid input type for {ticker}: must be letters only"    
         try:
-            if len(symbol) < 1 or len(symbol) > 6:
-                raise ValueError(f"Invalid string length for {symbol}: must be between 1 and 6 characters")
-            if not symbol.isalpha():
-                raise TypeError(f"Invalid input type for {symbol}: must be letters only")
-            return requests.get(f"https://www.alphavantage.co/query?function=TIME_SERIES_WEEKLY_ADJUSTED&symbol={symbol}&outputsize=full&apikey=9LVE9OGAKH31RPWM&datatype=json")
-        except ValueError as err:
-            display_error(err)
-        except TypeError as err:
-            display_error(err)
+            return format_data(requests.get(f"https://www.alphavantage.co/query?function=TIME_SERIES_WEEKLY_ADJUSTED&symbol={ticker}&outputsize=full&apikey=9LVE9OGAKH31RPWM&datatype=json"))
         except:
-            display_error("Invalid ticker symbol")
+            return f"Invalid symbol: {ticker}"
+
+    # Format data and return as Pandas DataFram object             
+    def format_data(resp):
+        data = json.loads(resp.content)
+        dates, vals = ([] for i in range(2))
+        for i in data["Weekly Adjusted Time Series"]:
+            dates.append(i)
+            vals.append(data["Weekly Adjusted Time Series"][i]["5. adjusted close"])
+        return pd.DataFrame(dict(date=dates, value=vals)).to_json(date_format='iso', orient='split')
 
     app.run_server(port='8080', debug=True)
 
