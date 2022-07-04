@@ -97,27 +97,23 @@ def main():
         Input("interval-component", "n_intervals")
     )
     def update_time(n):
-        return datetime.now().strftime('%m/%d/%Y %H:%M') 
-
-    # Display error in bootstrap alert
-    @app.callback(
-        Output("alert-fade", "is_open"),
-        State("alert-fade", "is_open"),
-    )
-    def display_error(err):
-        alert = dbc.Alert([
-            f"Invalid input. Error was: {err}",
-        ], id="alert-fade", color="danger", n_clicks=0,)
-
+        return datetime.now().strftime('%m/%d/%Y %H:%M')
 
     # Get time-series data from API
     @app.callback(
         Output("data", "children"),
         Output("ticker", "children"),
+        Output("alert", "is_open"),
         Input("lookup-btn", "n_clicks"),
         State("ticker-select", "value"),
+        State("alert", "is_open"),
     )    
-    def get_data(symbol):
+    def get_input(n_clicks, symbol):
+        def display_error(err):
+            return dbc.Alert([
+                f"Invalid input. Error was: {err}",
+            ], id="alert", color="danger", is_open=True)
+            
         try:
             if len(symbol) < 1 or len(symbol) > 6:
                 raise ValueError(f"Invalid string length for {symbol}: must be between 1 and 6 characters")
