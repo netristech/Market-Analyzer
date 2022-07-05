@@ -37,13 +37,34 @@ def main():
 
     sidebar = dbc.Col([
         dbc.FormGroup([
-            html.Label("Enter symbol(s) to analyze."),
+            html.Label("Enter symbol(s) to watch."),
             dcc.Input(
-                id='ticker-select',
-                placeholder='Enter symbol',
+                id='watch-tickers',
+                placeholder='Enter symbol(s)',
                 type='text',
                 value=''
             ),
+            html.Label("Enter symbol(s) you own."),
+            dcc.Input(
+                id='own-tickers',
+                placeholder='Enter symbol(s)',
+                type='text',
+                value=''
+            ),            
+            dcc.Slider(
+                id="term-slider",
+                min=1,
+                max=4,
+                marks={1: "1y", 2: "2y", 3: "5y", 4: "10y"},
+                value=1,
+            ),
+            dcc.Slider(
+                id="interval-slider",
+                min=1,
+                max=4,
+                marks={1: "7/15", 2: "15/30", 3: "22/45", 4: "30/60"},
+                value=1,
+            ),            
             dbc.Button(
                 id='lookup-btn',
                 n_clicks=0,
@@ -51,12 +72,17 @@ def main():
                 color='primary',
                 block=True
             ),
+            dbc.Button(
+                id='save-btn',
+                n_clicks=0,
+                children='Save',
+                color='secondary',
+                block=True
+            ),            
         ])
     ], md=2, id="sidebar", className="bg-dark text-white")
 
     content = dbc.Col([
-        #html.Div(id="data", style={"display": "none"}),
-        #html.Div(id="ticker", style={"display": "none"}),
         dbc.Alert(
             "Invalid input. Error was: ",
             id="alert",
@@ -64,7 +90,7 @@ def main():
             is_open=False,
             dismissable=True
         ),
-        html.Div(id="data"),
+        html.Div(id="data", style={"display": "none"}),
         dcc.Interval(
             id="interval-component",
             interval=60000,
@@ -98,7 +124,7 @@ def main():
         Output("alert", "children"),
         Output("alert", "is_open"),
         Input("lookup-btn", "n_clicks"),
-        State("ticker-select", "value"),
+        State("watch-tickers", "value"),
     )    
     def get_data(n_clicks, ticker):
         if len(ticker) < 1 or len(ticker) > 6:
