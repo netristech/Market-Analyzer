@@ -43,7 +43,7 @@ def main():
                 id='watch-tickers',
                 placeholder='Enter symbol(s)',
                 type='text',
-                pattern='[A-Za-z]{1,6}',
+                pattern='[A-Za-z ]+',
                 value=''
             ),           
             dcc.Slider(
@@ -112,31 +112,14 @@ def main():
         Input("interval-component", "n_intervals")
     )
     def update_time(n):
-        return datetime.now().strftime('%m/%d/%Y %H:%M')
+        return datetime.now().strftime('%m/%d/%Y %H:%M')            
 
-    @app.callback(
-        Output("alert", "content"),
-        Output("alert", "is_open"),
-        Input("lookup-btn", "n_clicks"),
-        State("watch-tickers", "value"),
-    )
-    def check_input(n_clicks, tickers):
-        for ticker in tickers.split():
-            if not ticker.isalpha():
-                return "Invalid input: tickers should only contain letters", True
-            if len(ticker) < 1 or len(ticker) > 5:
-                return "Invalid input: ticker length should be between 1 and 5 characters", True
-            
-
-'''
     # Get time-series data from API and update Dash Bootstrap components
     @app.callback(
         Output("data", "data"),
         Input("lookup-btn", "n_clicks"),
         State("watch-tickers", "value"),
-    )
-    def check_input(n_clicks, tickers):
-        
+    )   
     def get_data(n_clicks, tickers):
         data = {}
         for ticker in tickers.replace(',', ' ').split():
@@ -145,9 +128,9 @@ def main():
                 return json.dumps({"error": "invalid input"})
             else:
                 data.update({ticker: json.loads(resp.content)})
-        return json.dumps(data)'''
+        return json.dumps(data)
     
-    # Debugging output - REMOVE LATER
+    # Debugging output - REMOVE LATER!
     @app.callback(
         Output("test", "children"),
         Input("data", "data")
