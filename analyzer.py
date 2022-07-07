@@ -43,7 +43,7 @@ def main():
                 id='watch-tickers',
                 placeholder='Enter symbol(s)',
                 type='text',
-                pattern='[A-Za-z ]+',
+                pattern='[A-Za-z ,]+',
                 value=''
             ),           
             dcc.Slider(
@@ -103,7 +103,7 @@ def main():
     app.layout = dbc.Container([
         dbc.Row([sidebar, content],
         className="text-dark"),
-        dcc.Store(id="data")
+        dcc.Store(id="data", storage_type="session")
     ], id="container", fluid=True)
 
     # Update time and display
@@ -127,7 +127,7 @@ def main():
             if "Error Message" in json.loads(resp.content):
                 return json.dumps({"error": "invalid input"})
             else:
-                data.update({ticker: json.loads(resp.content)})
+                data.update({ticker: format_data(resp)})
         return json.dumps(data)
     
     # Debugging output - REMOVE LATER!
