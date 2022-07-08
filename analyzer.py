@@ -115,7 +115,7 @@ def main():
         return datetime.now().strftime('%m/%d/%Y %H:%M')            
 
     # Get time-series data from API and update Dash Bootstrap components
-    @app.callback(
+    '''@app.callback(
         Output("data", "data"),
         Input("lookup-btn", "n_clicks"),
         State("watch-tickers", "value"),
@@ -128,8 +128,17 @@ def main():
                 return json.dumps({"error": "invalid input"})
             else:
                 data.update({ticker: format_data(resp)})
-        return json.dumps(data)
-    
+        return json.dumps(data)'''
+
+    @app.callback(
+        Output("data", "data"),
+        Input("lookup-btn", "n_clicks"),
+        State("watch-tickers", "value"),
+    )
+    def test_data(n_clicks, ticker):
+        resp = requests.get(f"https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol={ticker}&apikey=9LVE9OGAKH31RPWM")
+        return resp.content
+
     # Debugging output - REMOVE LATER!
     @app.callback(
         Output("test", "children"),
