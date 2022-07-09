@@ -115,38 +115,43 @@ def main():
         return datetime.now().strftime('%m/%d/%Y %H:%M')            
 
     # Get time-series data from API and update Dash Bootstrap components
-    '''@app.callback(
+    @app.callback(
         Output("data", "data"),
         Input("lookup-btn", "n_clicks"),
         State("watch-tickers", "value"),
+        prevent_initial_call=True,
     )   
     def get_data(n_clicks, tickers):
-        data = {}
-        for ticker in tickers.replace(',', ' ').split():
-            resp = requests.get(f"https://www.alphavantage.co/query?function=TIME_SERIES_WEEKLY_ADJUSTED&symbol={ticker}&outputsize=full&apikey=9LVE9OGAKH31RPWM&datatype=json")
-            if "Error Message" in json.loads(resp.content):
-                return json.dumps({"error": "invalid input"})
-            else:
-                data.update({ticker: format_data(resp)})
-        return json.dumps(data)'''
-
+        if len(tickers) > 1:
+            data = {}
+            for ticker in tickers.replace(',', ' ').split():
+                if len(ticker) > 5:
+                    return json.dumps({"error": f"Invalid ticker length in input: {ticker}"})
+                if not ticker.isalpha():
+                    return json.dumps({"error": f"Invalid characters found in ticker: {ticker}"})
+                resp = requests.get(f"https://www.alphavantage.co/query?function=TIME_SERIES_WEEKLY_ADJUSTED&symbol={ticker}&outputsize=full&apikey=9LVE9OGAKH31RPWM&datatype=json")
+                if "Error Message" in json.loads(resp.content):
+                    return json.dumps({"error": f"Invalid ticker in input: {ticker}"})
+                else:
+                    data.update({ticker: format_data(resp)})
+            return json.dumps(data)
+    
     @app.callback(
-        Output("data", "data"),
-        Input("lookup-btn", "n_clicks"),
-        State("watch-tickers", "value"),
+        Output("alert", "children"),
+        Output("alert", "is_open"),
+        Input("data", "data"),
     )
-    def test_data(n_clicks, ticker):
-        resp = requests.get(f"https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol={ticker}&apikey=9LVE9OGAKH31RPWM")
-        return resp.content
+    def check_data(data):
+        if 
 
     # Debugging output - REMOVE LATER!
-    @app.callback(
+'''    @app.callback(
         Output("test", "children"),
         Input("data", "data")
     )
     def print_data(data):
         return data
-
+'''
     # Format API data and return as Pandas DataFram object; expects requests response as input; returns Pandas DataFrame as JSON
     def format_data(resp):
         data = json.loads(resp.content)
