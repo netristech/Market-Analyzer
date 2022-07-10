@@ -127,7 +127,7 @@ def main():
         if len(tickers) > 1:
             data = {}
             for ticker in tickers.replace(',', ' ').split():
-                if not re.search('^[A-Za-z^]{1}[A-Za-z-=]{1,7}$', ticker):
+                if not re.search('^[A-Za-z^]{1}[A-Za-z-=]{0,7}(?<=[A-Za-z])$', ticker):
                     return json.dumps({"error": f"Invalid characters or length in ticker: {ticker}"})
                 resp = requests.get(f"https://www.alphavantage.co/query?function=TIME_SERIES_WEEKLY_ADJUSTED&symbol={ticker}&outputsize=full&apikey=9LVE9OGAKH31RPWM&datatype=json")
                 if "Error Message" in json.loads(resp.content):
