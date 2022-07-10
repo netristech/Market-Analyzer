@@ -7,6 +7,7 @@
 
 # Import modules
 import requests
+import re
 import statistics
 import simplejson as json
 import dash
@@ -43,7 +44,7 @@ def main():
                 id='watch-tickers',
                 placeholder='Enter symbol(s)',
                 type='text',
-                pattern='[A-Za-z ,]+',
+                pattern='[A-Za-z-=^ ,]+',
                 value=''
             ),           
             dcc.Slider(
@@ -103,7 +104,8 @@ def main():
     app.layout = dbc.Container([
         dbc.Row([sidebar, content],
         className="text-dark"),
-        dcc.Store(id="data", storage_type="session")
+        #dcc.Store(id="data", storage_type="session")
+        dcc.Store(id="data")
     ], id="container", fluid=True)
 
     # Update time and display
@@ -125,10 +127,8 @@ def main():
         if len(tickers) > 1:
             data = {}
             for ticker in tickers.replace(',', ' ').split():
-                if len(ticker) > 5:
-                    return json.dumps({"error": f"Invalid ticker length in input: {ticker}"})
-                if not ticker.isalpha():
-                    return json.dumps({"error": f"Invalid characters found in ticker: {ticker}"})
+                if not re.search('^[A-Za-z^]{1}[A-Za-z-=]{1,7}$', ticker):
+                    return json.dumps({"error": f"Invalid characters or length in ticker: {ticker}"})
                 resp = requests.get(f"https://www.alphavantage.co/query?function=TIME_SERIES_WEEKLY_ADJUSTED&symbol={ticker}&outputsize=full&apikey=9LVE9OGAKH31RPWM&datatype=json")
                 if "Error Message" in json.loads(resp.content):
                     return json.dumps({"error": f"Invalid ticker in input: {ticker}"})
@@ -140,18 +140,22 @@ def main():
         Output("alert", "children"),
         Output("alert", "is_open"),
         Input("data", "data"),
+        prevent_initial_call=True,
     )
     def check_data(data):
-        if 
+        if "error" in json.loads(data).keys():
+            return json.dumps(json.loads(data).get('error')).strip('"'), True
+        else:
+            return dash.no_update, False
 
     # Debugging output - REMOVE LATER!
-'''    @app.callback(
+    @app.callback(
         Output("test", "children"),
         Input("data", "data")
     )
     def print_data(data):
         return data
-'''
+
     # Format API data and return as Pandas DataFram object; expects requests response as input; returns Pandas DataFrame as JSON
     def format_data(resp):
         data = json.loads(resp.content)
