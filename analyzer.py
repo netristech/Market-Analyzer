@@ -1,13 +1,13 @@
 #!/usr/bin/env python
 #
 # Description: Python Dash application to analyze time-series market data
-# Version: 0.5
+# Version: 0.65
 # Author: Brian Dunham (Netris)
 #
 
 # Import modules
-import requests
 import re
+import requests
 import statistics
 import simplejson as json
 import dash
@@ -92,7 +92,7 @@ def main():
             n_intervals=0
         ),        
         html.H3(id="time", className="text-center"),
-        html.Div(id="test"),
+        #html.Div(id="test"),
         #dcc.Graph(id="time-series-chart"),      
         #dbc.Row([
         #    dbc.Col(id="signal", md=3),
@@ -108,7 +108,7 @@ def main():
         dcc.Store(id="data")
     ], id="container", fluid=True)
 
-    # Update time and display
+    # Update time and display at top of content area
     @app.callback(
         Output("time", "children"),
         Input("interval-component", "n_intervals")
@@ -134,9 +134,11 @@ def main():
                 if "Error Message" in json.loads(resp.content):
                     return json.dumps({"error": f"Invalid ticker in input: {ticker}"})
                 else:
-                    data.update({ticker: format_data(resp)})
+                    #data.update({ticker: format_data(resp)})
+                    data.update({ticker: json.loads(resp.content)[key]})
             return json.dumps(data)
     
+    # Check for errors in data store and display bootstrap alert with error message
     @app.callback(
         Output("alert", "children"),
         Output("alert", "is_open"),
@@ -148,23 +150,39 @@ def main():
             return json.dumps(json.loads(data).get('error')).strip('"'), True
         else:
             return dash.no_update, False
-
-    # Debugging output - REMOVE LATER!
+    
+    # Draw graphs
     @app.callback(
-        Output("test", "children"),
-        Input("data", "data")
+        Output("content", "children"),
+        Input("data", "data"),
     )
-    def print_data(data):
-        return data
+    def draw_graphs(data):
+        data = json.loads(data)
+        if len(data) > 0:
+            for i in data:
+                df = format_data(data.get(i))
+                fig = px.line(df, x='date', y='value')
+                fig.update_traces(line_color='rgba(0,0,0,0.5)')
+                fig.update_layout(title_text=i, title_x=0.5)
+                yield dcc.Graph(figure=fig)
 
-    # Format API data and return as Pandas DataFram object; expects requests response as input; returns Pandas DataFrame as JSON
+     # Debugging output - REMOVE LATER!
+#    @app.callback(
+#        Output("test", "children"),
+#        Input("data", "data")
+#    )
+#    def print_data(data):
+#        return data
+
+    # Format API data and return as Pandas DataFram object
     def format_data(resp):
         data = json.loads(resp.content)
         dates, vals = ([] for i in range(2))
         for i in data[key]:
             dates.append(i)
             vals.append(data[key][i]["5. adjusted close"])
-        return pd.DataFrame(dict(date=dates, value=vals)).to_json(date_format='iso', orient='split')
+        #return pd.DataFrame(dict(date=dates, value=vals)).to_json(date_format='iso', orient='split')
+        return pd.DataFrame(dict(date=dates, value=vals))
 
     app.run_server(port='8080', debug=True)
 
