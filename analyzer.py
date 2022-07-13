@@ -158,13 +158,15 @@ def main():
     )
     def draw_graphs(data):
         data = json.loads(data)
+        graphs = []
         if len(data) > 0:
             for i in data:
                 df = format_data(data.get(i))
                 fig = px.line(df, x='date', y='value')
                 fig.update_traces(line_color='rgba(0,0,0,0.5)')
                 fig.update_layout(title_text=i, title_x=0.5)
-                yield dcc.Graph(figure=fig)
+                graphs.append(dcc.Graph(figure=fig))
+            return json.dumps(graphs)
 
      # Debugging output - REMOVE LATER!
 #    @app.callback(
