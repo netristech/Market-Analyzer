@@ -155,6 +155,7 @@ def main():
     @app.callback(
         Output("content", "children"),
         Input("data", "data"),
+        prevent_initial_call=True,
     )
     def draw_graphs(data):
         data = json.loads(data)
@@ -166,7 +167,7 @@ def main():
                 fig.update_traces(line_color='rgba(0,0,0,0.5)')
                 fig.update_layout(title_text=i, title_x=0.5)
                 graphs.append(dcc.Graph(figure=fig))
-            return json.dumps(graphs)
+            return html.Div([dbc.Row(i) for i in graphs])
 
      # Debugging output - REMOVE LATER!
 #    @app.callback(
@@ -177,13 +178,11 @@ def main():
 #        return data
 
     # Format API data and return as Pandas DataFram object
-    def format_data(resp):
-        data = json.loads(resp.content)
+    def format_data(data):
         dates, vals = ([] for i in range(2))
-        for i in data[key]:
+        for i in data:
             dates.append(i)
-            vals.append(data[key][i]["5. adjusted close"])
-        #return pd.DataFrame(dict(date=dates, value=vals)).to_json(date_format='iso', orient='split')
+            vals.append(data[i]["5. adjusted close"])
         return pd.DataFrame(dict(date=dates, value=vals))
 
     app.run_server(port='8080', debug=True)
