@@ -155,10 +155,17 @@ def main():
     @app.callback(
         Output("content", "children"),
         Input("data", "data"),
+        Input("term-slider", "value"),
         prevent_initial_call=True,
     )
-    def draw_graphs(data):
+    def draw_graphs(data, scale):
         data = json.loads(data)
+        switch = {
+            0: [one_year, 365],
+            1: [two_year, 730],
+            2: [five_year, 1825],
+            3: [ten_year, 3650],
+        }
         graphs = []
         if len(data) > 0:
             for i in data:
@@ -166,6 +173,8 @@ def main():
                 fig = px.line(df, x='date', y='value')
                 fig.update_traces(line_color='rgba(0,0,0,0.5)')
                 fig.update_layout(title_text=i, title_x=0.5)
+                fig.update_xaxes(range=[switch.get(scale)[0], now])
+                fig.update_yaxes(range=[min(df['value'].tolist()[:switch.get(scale)[1]]), max(df['value'].tolist()[:switch.get(scale)[1]])])                
                 graphs.append(dcc.Graph(figure=fig))
             return html.Div([dbc.Row(i) for i in graphs])
 
