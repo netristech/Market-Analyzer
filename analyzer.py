@@ -134,7 +134,6 @@ def main():
                 if "Error Message" in json.loads(resp.content):
                     return json.dumps({"error": f"Invalid ticker in input: {ticker}"})
                 else:
-                    #data.update({ticker: format_data(resp)})
                     data.update({ticker: json.loads(resp.content)[key]})
             return json.dumps(data)
     
@@ -160,14 +159,14 @@ def main():
     )
     def draw_graphs(data, scale):
         data = json.loads(data)
-        switch = {
-            0: [one_year, 365],
-            1: [two_year, 730],
-            2: [five_year, 1825],
-            3: [ten_year, 3650],
-        }
-        graphs = []
         if len(data) > 0:
+            graphs = []        
+            switch = {
+                1: [one_year, 365],
+                2: [two_year, 730],
+                3: [five_year, 1825],
+                4: [ten_year, 3650],
+            }            
             for i in data:
                 df = format_data(data.get(i))
                 fig = px.line(df, x='date', y='value')
