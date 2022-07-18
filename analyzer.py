@@ -162,18 +162,20 @@ def main():
         if len(data) > 0:
             graphs = []        
             switch = {
-                1: [one_year, 365],
-                2: [two_year, 730],
-                3: [five_year, 1825],
-                4: [ten_year, 3650],
+                1: [one_year, 52],
+                2: [two_year, 104],
+                3: [five_year, 261],
+                4: [ten_year, 521],
             }            
             for i in data:
                 df = pd.read_json(data.get(i), orient="split")
+                vals = df['value'].tolist()
+                window = vals[:switch.get(scale)[1]]
                 fig = px.line(df, x='date', y='value')
                 fig.update_traces(line_color='rgba(0,0,0,0.5)')
                 fig.update_layout(title_text=i, title_x=0.5)
                 fig.update_xaxes(range=[switch.get(scale)[0], now])
-                fig.update_yaxes(range=[min(df['value'].tolist()[:switch.get(scale)[1]]), max(df['value'].tolist()[:switch.get(scale)[1]])])                
+                fig.update_yaxes(range=[min(window)*.99, max(window)*1.01])             
                 graphs.append(dcc.Graph(figure=fig))
             return html.Div([dbc.Row(i) for i in graphs])
 
@@ -184,11 +186,7 @@ def main():
         prevent_initial_call=True,
     )
     def print_data(data):
-        try:
-            df = pd.read_json(data)
-            return df.to_json(date_format="iso", orient="split")
-        except:
-            pass'''
+        return data'''
 
     # Format API data and return as Pandas DataFram object
     def format_data(data):
