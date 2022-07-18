@@ -155,27 +155,36 @@ def main():
         Output("content", "children"),
         Input("data", "data"),
         Input("term-slider", "value"),
+        Input("interval-slider", "value"),
         prevent_initial_call=True,
     )
-    def draw_graphs(data, scale):
+    def draw_graphs(data, scale, macd):
         data = json.loads(data)
         if len(data) > 0:
             graphs = []        
-            switch = {
+            term_switch = {
                 1: [one_year, 52],
                 2: [two_year, 104],
                 3: [five_year, 261],
                 4: [ten_year, 521],
-            }            
+            }
+            int_switch = {
+                1: [7, 15],
+                2: [15, 30],
+                3: [22, 45],
+                4: [30, 60],
+            }        
             for i in data:
                 df = pd.read_json(data.get(i), orient="split")
                 vals = df['value'].tolist()
-                window = vals[:switch.get(scale)[1]]
+                window = vals[:term_switch.get(scale)[1]]
                 fig = px.line(df, x='date', y='value')
                 fig.update_traces(line_color='rgba(0,0,0,0.5)')
+                fig.add_scatter(x=df['date'], y=get_wma(window, int_switch.get(macd)[0]), mode='lines', line_color='rgba(255,128,200,0.8)', line_shape='spline')
+                fig.add_scatter(x=df['date'], y=get_sma(window, int_switch.get(macd)[1]), mode='lines', line_color='rgba(128,128,255,0.8)', line_shape='spline')
                 fig.update_layout(title_text=i, title_x=0.5)
-                fig.update_xaxes(range=[switch.get(scale)[0], now])
-                fig.update_yaxes(range=[min(window)*.99, max(window)*1.01])             
+                fig.update_xaxes(range=[term_switch.get(scale)[0], now])
+                fig.update_yaxes(range=[min(window)*.99, max(window)*1.01])        
                 graphs.append(dcc.Graph(figure=fig))
             return html.Div([dbc.Row(i) for i in graphs])
 
@@ -195,6 +204,29 @@ def main():
             dates.append(i)
             vals.append(data[i]["5. adjusted close"])
         return pd.DataFrame(dict(date=dates, value=vals)).to_json(date_format="iso", orient="split")
+
+    def get_wma(vals, dur):
+        wvals = []
+        weights = [i + 1 for i in range(dur)][::-1]
+        for i in range(len(vals)):
+            if i + dur >= len(vals):
+                r = len(vals) - i
+                w = sum([vals[-r:][x] * weights[-r:][x] for x in range(r)]) / sum(weights[-r:])
+            else:
+                w = sum([vals[i:i+dur][x] * weights[x] for x in range(dur)]) / sum(weights)
+            wvals.append(w)
+        return wvals
+        
+    def get_sma(vals, dur):
+        svals = []
+        for i in range(len(vals)):
+            if i + dur >= len(vals):
+                r = len(vals) - i
+                s = sum(vals[-r:]) / len(vals[-r:])
+            else:
+                s = sum(vals[i:i+dur]) / dur
+            svals.append(s)
+        return svals        
 
     app.run_server(port='8080', debug=True)
 

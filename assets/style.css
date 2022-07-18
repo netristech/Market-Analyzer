@@ -1,7 +1,3 @@
-#container .row:first-child {
-    min-height: 100vh !important;
-}
-
 #sidebar, #content {
     padding: 30px;
 }
@@ -14,6 +10,10 @@
 #sidebar input, .rc-slider {
     width: 100%;
     margin-bottom: 30px;
+}
+
+#content {
+    min-height: 100vh !important;
 }
 
 .metrics {
