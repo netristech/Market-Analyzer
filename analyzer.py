@@ -180,8 +180,8 @@ def main():
                 window = vals[:term_switch.get(scale)[1]]
                 fig = px.line(df, x='date', y='value')
                 fig.update_traces(line_color='rgba(0,0,0,0.5)')
-                fig.add_scatter(x=df['date'], y=get_wma(window, int_switch.get(macd)[0]), mode='lines', line_color='rgba(255,128,200,0.8)', line_shape='spline')
-                fig.add_scatter(x=df['date'], y=get_sma(window, int_switch.get(macd)[1]), mode='lines', line_color='rgba(128,128,255,0.8)', line_shape='spline')
+                fig.add_scatter(x=df['date'], y=get_wma(window, int_switch.get(macd)[0]), mode='lines', line_color='rgba(255,128,200,0.8)', line_shape='spline', name=f'{int_switch.get(macd)[0]} period')
+                fig.add_scatter(x=df['date'], y=get_sma(window, int_switch.get(macd)[1]), mode='lines', line_color='rgba(128,128,255,0.8)', line_shape='spline', name=f'{int_switch.get(macd)[1]} period')
                 fig.update_layout(title_text=i, title_x=0.5)
                 fig.update_xaxes(range=[term_switch.get(scale)[0], now])
                 fig.update_yaxes(range=[min(window)*.99, max(window)*1.01])        
