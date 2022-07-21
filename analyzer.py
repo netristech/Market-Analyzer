@@ -60,7 +60,7 @@ def main():
                 max=4,
                 marks={1: "7/15", 2: "15/30", 3: "22/45", 4: "30/60"},
                 value=1,
-            ),            
+            ),        
             dbc.Button(
                 id='lookup-btn',
                 n_clicks=0,
@@ -92,14 +92,16 @@ def main():
             n_intervals=0
         ),        
         html.H3(id="time", className="text-center"),
-        html.Div(id="test"),
+        dcc.Loading([
+            html.Div(id="content"),
+        ]   ),
         #dcc.Graph(id="time-series-chart"),      
         #dbc.Row([
         #    dbc.Col(id="signal", md=3),
         #    dbc.Col(id="buy-price", md=3),
         #    dbc.Col(id="sell-price", md=3),
         #], className="metrics")
-    ], md=10, id="content")
+    ], md=10)
     
     app.layout = dbc.Container([
         dbc.Row([sidebar, content],
@@ -177,16 +179,16 @@ def main():
             for i in data:
                 df = pd.read_json(data.get(i), orient="split")
                 vals = df['value'].tolist()
-                window = vals[:term_switch.get(scale)[1]]
+                #window = vals[:term_switch.get(scale)[1]]
                 fig = px.line(df, x='date', y='value')
                 fig.update_traces(line_color='rgba(0,0,0,0.5)')
                 #fig.add_scatter(x=df['date'], y=get_wma(window, int_switch.get(macd)[0]), mode='lines', line_color='rgba(255,128,200,0.8)', line_shape='spline', name=f'{int_switch.get(macd)[0]} days')
-                #fig.add_scatter(x=df['date'], y=get_sma(window, int_switch.get(macd)[1]), mode='lines', line_color='rgba(128,128,255,0.8)', line_shape='spline', name=f'{int_switch.get(macd)[1]} days')
+                fig.add_scatter(x=df['date'], y=get_sma(vals, int_switch.get(macd)[1]), mode='lines', line_color='rgba(128,128,255,0.8)', line_shape='spline', name=f'{int_switch.get(macd)[1]} days')
                 fig.add_scatter(x=df['date'], y=df['value'].ewm(span=int_switch.get(macd)[0], adjust=False).mean(), mode='lines', line_color='rgba(255,128,200,0.8)', line_shape='spline', name=f'{int_switch.get(macd)[0]} days')
-                fig.add_scatter(x=df['date'], y=df['value'].rolling(int_switch.get(macd)[1]).mean(), mode='lines', line_color='rgba(128,128,255,0.8)', line_shape='spline', name=f'{int_switch.get(macd)[1]} days')
+                #fig.add_scatter(x=df['date'], y=df['value'].rolling(int_switch.get(macd)[1]).mean(), mode='lines', line_color='rgba(128,128,255,0.8)', line_shape='spline', name=f'{int_switch.get(macd)[1]} days')
                 fig.update_layout(title_text=i, title_x=0.5)
                 fig.update_xaxes(range=[term_switch.get(scale)[0], now])
-                fig.update_yaxes(range=[min(window)*.99, max(window)*1.01])        
+                fig.update_yaxes(range=[min(vals[:term_switch.get(scale)[1]])*.99, max(vals[:term_switch.get(scale)[1]])*1.01])        
                 graphs.append(dcc.Graph(figure=fig))
             return html.Div([dbc.Row(i) for i in graphs])
 
