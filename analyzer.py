@@ -93,8 +93,9 @@ def main():
         ),        
         html.H3(id="time", className="text-center"),
         dcc.Loading([
+            html.Div(id="test"),
             html.Div(id="content"),
-        ]   ),
+        ]),
         #dcc.Graph(id="time-series-chart"),      
         #dbc.Row([
         #    dbc.Col(id="signal", md=3),
@@ -107,7 +108,9 @@ def main():
         dbc.Row([sidebar, content],
         className="text-dark"),
         #dcc.Store(id="data", storage_type="session")
-        dcc.Store(id="data")
+        dcc.Loading([
+            dcc.Store(id="data"),
+        ]),
     ], id="container", fluid=True)
 
     # Update time and display at top of content area
@@ -193,13 +196,13 @@ def main():
             return html.Div([dbc.Row(i) for i in graphs])
 
     # Debugging output - REMOVE LATER!
-    '''@app.callback(
+    @app.callback(
         Output("test", "children"),
         Input("data", "data"),
         prevent_initial_call=True,
     )
     def print_data(data):
-        return data'''
+        return data
 
     # Format API data and return as Pandas DataFram object
     def format_data(data):
