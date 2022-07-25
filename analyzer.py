@@ -225,6 +225,7 @@ def main():
         return wvals
         
     def get_sma(vals, dur):
+        vals = vals[::-1]
         svals = []
         for i in range(len(vals)):
             if i + dur >= len(vals):
@@ -233,7 +234,7 @@ def main():
             else:
                 s = sum(vals[i:i+dur]) / dur
             svals.append(s)
-        return svals        
+        return svals[::-1]
 
     app.run_server(port='8080', debug=True)
 
