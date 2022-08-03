@@ -181,28 +181,29 @@ def main():
             }        
             for i in data:
                 df = pd.read_json(data.get(i), orient="split")
-                vals = df['value'].tolist()
-                #window = vals[:term_switch.get(scale)[1]]
                 fig = px.line(df, x='date', y='value')
                 fig.update_traces(line_color='rgba(0,0,0,0.5)')
                 #fig.add_scatter(x=df['date'], y=get_wma(window, int_switch.get(macd)[0]), mode='lines', line_color='rgba(255,128,200,0.8)', line_shape='spline', name=f'{int_switch.get(macd)[0]} days')
-                fig.add_scatter(x=df['date'], y=get_sma(vals, int_switch.get(macd)[1]), mode='lines', line_color='rgba(128,128,255,0.8)', line_shape='spline', name=f'{int_switch.get(macd)[1]} days')
-                fig.add_scatter(x=df['date'], y=df['value'].ewm(span=int_switch.get(macd)[0], adjust=False).mean(), mode='lines', line_color='rgba(255,128,200,0.8)', line_shape='spline', name=f'{int_switch.get(macd)[0]} days')
+                #fig.add_scatter(x=df['date'], y=get_sma(vals, int_switch.get(macd)[1]), mode='lines', line_color='rgba(128,128,255,0.8)', line_shape='spline', name=f'{int_switch.get(macd)[1]} days')
+                #fig.add_scatter(x=df['date'], y=df['value'][::-1].ewm(span=int_switch.get(macd)[0], adjust=False).mean()[::-1], mode='lines', line_color='rgba(255,128,200,0.8)', line_shape='spline', name=f'{int_switch.get(macd)[0]} days')
+                fig.add_scatter(x=df['date'], y=get_macd(df)['macd'], mode='lines', line_color='rgba(255,128,200,0.8)', line_shape='spline', name=f'{int_switch.get(macd)[0]} days')
+                fig.add_scatter(x=df['date'], y=get_macd(df)['sig'], mode='lines', line_color='rgba(128,238,255,0.8)', line_shape='spline', name=f'{int_switch.get(macd)[0]} days')
                 #fig.add_scatter(x=df['date'], y=df['value'].rolling(int_switch.get(macd)[1]).mean(), mode='lines', line_color='rgba(128,128,255,0.8)', line_shape='spline', name=f'{int_switch.get(macd)[1]} days')
                 fig.update_layout(title_text=i, title_x=0.5)
                 fig.update_xaxes(range=[term_switch.get(scale)[0], now])
-                fig.update_yaxes(range=[min(vals[:term_switch.get(scale)[1]])*.99, max(vals[:term_switch.get(scale)[1]])*1.01])        
+                #fig.update_yaxes(range=[min(vals[:term_switch.get(scale)[1]])*.99, max(vals[:term_switch.get(scale)[1]])*1.01])
+                fig.update_yaxes(range=[min(df['value'][:term_switch.get(scale)[1]])*.99, max(df['value'][:term_switch.get(scale)[1]])*1.01])        
                 graphs.append(dcc.Graph(figure=fig))
             return html.Div([dbc.Row(i) for i in graphs])
 
     # Debugging output - REMOVE LATER!
-    @app.callback(
+    '''@app.callback(
         Output("test", "children"),
         Input("data", "data"),
         prevent_initial_call=True,
     )
     def print_data(data):
-        return data
+        return data'''
 
     # Format API data and return as Pandas DataFram object
     def format_data(data):
@@ -225,7 +226,6 @@ def main():
         return wvals
         
     def get_sma(vals, dur):
-        vals = vals[::-1]
         svals = []
         for i in range(len(vals)):
             if i + dur >= len(vals):
@@ -234,7 +234,14 @@ def main():
             else:
                 s = sum(vals[i:i+dur]) / dur
             svals.append(s)
-        return svals[::-1]
+        return svals
+
+    def get_macd(df):
+        ema12 = df['value'].ewm(span=12, adjust=False).mean()
+        ema26 = df['value'].ewm(span=26, adjust=False).mean()
+        df['macd'] = [round(ema12[i] - ema26[i], 2) for i in range(len(ema12))]
+        df['sig'] = df['macd'].ewm(span=9, adjust=False).mean()
+        return df
 
     app.run_server(port='8080', debug=True)
 
