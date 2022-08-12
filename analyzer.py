@@ -181,22 +181,28 @@ def main():
             }        
             for i in data:
                 df = pd.read_json(data.get(i), orient="split")
-                fig = px.line(df, x='date', y='value')
-                fig.update_traces(line_color='rgba(0,0,0,0.5)')
+                fig1 = px.line(df, x='date', y='value')
+                fig1.update_traces(line_color='rgba(0,0,0,0.5)')
                 #fig.add_scatter(x=df['date'], y=get_wma(window, int_switch.get(macd)[0]), mode='lines', line_color='rgba(255,128,200,0.8)', line_shape='spline', name=f'{int_switch.get(macd)[0]} days')
                 #fig.add_scatter(x=df['date'], y=get_sma(vals, int_switch.get(macd)[1]), mode='lines', line_color='rgba(128,128,255,0.8)', line_shape='spline', name=f'{int_switch.get(macd)[1]} days')
-                #fig.add_scatter(x=df['date'], y=df['value'][::-1].ewm(span=int_switch.get(macd)[0], adjust=False).mean()[::-1], mode='lines', line_color='rgba(255,128,200,0.8)', line_shape='spline', name=f'{int_switch.get(macd)[0]} days')
-                #fig.add_scatter(x=df['date'], y=df['value'].rolling(int_switch.get(macd)[1]).mean(), mode='lines', line_color='rgba(128,128,255,0.8)', line_shape='spline', name=f'{int_switch.get(macd)[1]} days')
-                fig.update_layout(title_text=i, title_x=0.5)
-                fig.update_xaxes(range=[term_switch.get(scale)[0], now])
-                fig.update_yaxes(range=[min(df['value'][:term_switch.get(scale)[1]])*.99, max(df['value'][:term_switch.get(scale)[1]])*1.01])        
-                graphs.append(dcc.Graph(figure=fig))
-                fig = px.line(get_macd(df), x='date', y='macd')
-                fig.update_traces(line_color='rgba(208,128,208,0.8)')
-                fig.add_scatter(x=df['date'], y=get_macd(df)['sig'], mode='lines', line_color='rgba(128,208,248,0.8)', line_shape='spline')
-                fig.update_xaxes(range=[term_switch.get(scale)[0], now])
-                fig.update_yaxes(range=[min(get_macd(df)['macd'][:term_switch.get(scale)[1]])*.99, max(get_macd(df)['macd'][:term_switch.get(scale)[1]])*1.01])
-                graphs.append(dcc.Graph(figure=fig))
+                fig1.update_xaxes(range=[term_switch.get(scale)[0], now])
+                fig1.update_yaxes(range=[min(df['value'][:term_switch.get(scale)[1]])*.99, max(df['value'][:term_switch.get(scale)[1]])*1.01])
+                fig2 = px.line(get_macd(df), x='date', y='macd')
+                fig2.update_traces(line_color='rgba(208,128,208,0.8)')
+                fig2.add_scatter(x=df['date'], y=get_macd(df)['sig'], mode='lines', line_color='rgba(128,208,248,0.8)', line_shape='spline')
+                fig2.update_xaxes(range=[term_switch.get(scale)[0], now])
+                fig2.update_yaxes(range=[min(get_macd(df)['macd'][:term_switch.get(scale)[1]])*.99, max(get_macd(df)['macd'][:term_switch.get(scale)[1]])*1.01])
+                graphs.append(dbc.Row([
+                    html.H5(i),
+                    dcc.Tabs([
+                        dcc.Tab(label="Values", children=[
+                            dcc.Graph(figure=fig1)
+                        ]),
+                        dcc.Tab(label="MACD", children=[
+                            dcc.Graph(figure=fig2)
+                        ]),
+                    ]),
+                ]))
             return html.Div([dbc.Row(i) for i in graphs])
 
     # Debugging output - REMOVE LATER!
