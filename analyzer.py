@@ -61,6 +61,7 @@ def main():
                 #marks={1: "7/15", 2: "15/30", 3: "22/45", 4: "30/60"},
                 #value=1,
             #),
+            html.Label("Graph View"),
             dcc.Dropdown(
                 id="graph-selector",
                 options=[
@@ -68,6 +69,7 @@ def main():
                     {"label": "MACD", "value": 2},
                 ],
                 value=1,
+                className="text-dark",
                 clearable=False,
             ),
             dbc.Button(
@@ -238,7 +240,7 @@ def main():
     def print_data(data):
         return data'''
 
-    # Format API data and return as Pandas DataFram object
+    # Calculate graphing data, format, and return as Pandas DataFram object
     def format_data(data):
         dates, vals = ([] for i in range(2))
         for i in data:
