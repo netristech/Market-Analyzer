@@ -54,13 +54,22 @@ def main():
                 marks={1: "1y", 2: "2y", 3: "5y", 4: "10y"},
                 value=1,
             ),
-            dcc.Slider(
-                id="interval-slider",
-                min=1,
-                max=4,
-                marks={1: "7/15", 2: "15/30", 3: "22/45", 4: "30/60"},
+            #dcc.Slider(
+                #id="interval-slider",
+                #min=1,
+                #max=4,
+                #marks={1: "7/15", 2: "15/30", 3: "22/45", 4: "30/60"},
+                #value=1,
+            #),
+            dcc.Dropdown(
+                id="graph-selector",
+                options=[
+                    {"label": "Normal", "value": 1},
+                    {"label": "MACD", "value": 2},
+                ],
                 value=1,
-            ),        
+                clearable=False,
+            ),
             dbc.Button(
                 id='lookup-btn',
                 n_clicks=0,
@@ -160,10 +169,11 @@ def main():
         Output("content", "children"),
         Input("data", "data"),
         Input("term-slider", "value"),
-        Input("interval-slider", "value"),
+        Input("graph-selector", "value"),
+        #Input("interval-slider", "value"),
         prevent_initial_call=True,
     )
-    def draw_graphs(data, scale, macd):
+    def draw_graphs(data, scale, view):
         data = json.loads(data)
         if len(data) > 0:
             graphs = []        
@@ -173,18 +183,32 @@ def main():
                 3: [five_year, 261],
                 4: [ten_year, 521],
             }
-            int_switch = {
+            '''int_switch = {
                 1: [7, 15],
                 2: [15, 30],
                 3: [22, 45],
                 4: [30, 60],
-            }        
+            } '''
+            view_switch = {
+                1: ['value', 'rgba(0,0,0,0.5)'],
+                2: ['macd sig', 'rgba(208,128,208,0.9) rgba(128,208,248,0.9)'],
+            } 
             for i in data:
                 df = pd.read_json(data.get(i), orient="split")
-                fig1 = px.line(df, x='date', y='value')
+                params = view_switch.get(view)
+                fig = px.line(df, x='date', y=params[0].split()[0])
+                fig.update_traces(line_color=params[1].split()[0])
+                if len(params[0].split()) > 1:
+                    for j in range(len(params[0].split())-1):
+                        fig.add_scatter(x=df['date'], y=df[params[0].split()[j+1]], mode='lines', line_color=params[1].split()[j+1], line_shape='spline')
+                fig.update_xaxes(range=[term_switch.get(scale)[0], now])
+                fig.update_yaxes(range=[min(df[params[0].split()[0]][:term_switch.get(scale)[1]])*.99, max(df[params[0].split()[0]][:term_switch.get(scale)[1]])*1.01])
+                graphs.append(dbc.Row([
+                    html.H5(i),
+                    dcc.Graph(figure=fig),
+                ]))
+                '''fig1 = px.line(df, x='date', y='value')
                 fig1.update_traces(line_color='rgba(0,0,0,0.5)')
-                #fig.add_scatter(x=df['date'], y=get_wma(window, int_switch.get(macd)[0]), mode='lines', line_color='rgba(255,128,200,0.8)', line_shape='spline', name=f'{int_switch.get(macd)[0]} days')
-                #fig.add_scatter(x=df['date'], y=get_sma(vals, int_switch.get(macd)[1]), mode='lines', line_color='rgba(128,128,255,0.8)', line_shape='spline', name=f'{int_switch.get(macd)[1]} days')
                 fig1.update_xaxes(range=[term_switch.get(scale)[0], now])
                 fig1.update_yaxes(range=[min(df['value'][:term_switch.get(scale)[1]])*.99, max(df['value'][:term_switch.get(scale)[1]])*1.01])
                 fig2 = px.line(get_macd(df), x='date', y='macd')
@@ -202,8 +226,8 @@ def main():
                             dcc.Graph(figure=fig2)
                         ]),
                     ]),
-                ]))
-            return html.Div([dbc.Row(i) for i in graphs])
+                ]))'''
+            return [i for i in graphs]
 
     # Debugging output - REMOVE LATER!
     '''@app.callback(
@@ -220,7 +244,12 @@ def main():
         for i in data:
             dates.append(i)
             vals.append(data[i]["5. adjusted close"])
-        return pd.DataFrame(dict(date=dates, value=vals)).to_json(date_format="iso", orient="split")
+        df = pd.DataFrame(dict(date=dates, value=vals))
+        ema12 = df['value'].ewm(span=12, adjust=False).mean()
+        ema26 = df['value'].ewm(span=26, adjust=False).mean()
+        df['macd'] = [round(ema12[i] - ema26[i], 2) for i in range(len(ema12))]
+        df['sig'] = df['macd'].ewm(span=9, adjust=False).mean()
+        return df.to_json(date_format="iso", orient="split")
 
     def get_wma(vals, dur):
         wvals = []
