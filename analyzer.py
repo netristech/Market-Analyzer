@@ -46,7 +46,8 @@ def main():
                 type='text',
                 pattern='[A-Za-z-=^ ,]+',
                 value=''
-            ),           
+            ),
+            html.Label("Graph Scale"),        
             dcc.Slider(
                 id="term-slider",
                 min=1,
@@ -54,13 +55,6 @@ def main():
                 marks={1: "1y", 2: "2y", 3: "5y", 4: "10y"},
                 value=1,
             ),
-            #dcc.Slider(
-                #id="interval-slider",
-                #min=1,
-                #max=4,
-                #marks={1: "7/15", 2: "15/30", 3: "22/45", 4: "30/60"},
-                #value=1,
-            #),
             html.Label("Graph View"),
             dcc.Dropdown(
                 id="graph-selector",
@@ -107,12 +101,6 @@ def main():
             html.Div(id="test"),
             html.Div(id="content"),
         ]),
-        #dcc.Graph(id="time-series-chart"),      
-        #dbc.Row([
-        #    dbc.Col(id="signal", md=3),
-        #    dbc.Col(id="buy-price", md=3),
-        #    dbc.Col(id="sell-price", md=3),
-        #], className="metrics")
     ], md=10)
     
     app.layout = dbc.Container([
@@ -172,12 +160,11 @@ def main():
         Input("data", "data"),
         Input("term-slider", "value"),
         Input("graph-selector", "value"),
-        #Input("interval-slider", "value"),
         prevent_initial_call=True,
     )
     def draw_graphs(data, scale, view):
-        data = json.loads(data)
-        if len(data) > 0:
+        if data != None and len(data) > 0:
+            data = json.loads(data)
             graphs = []        
             term_switch = {
                 1: [one_year, 52],
@@ -185,50 +172,24 @@ def main():
                 3: [five_year, 261],
                 4: [ten_year, 521],
             }
-            '''int_switch = {
-                1: [7, 15],
-                2: [15, 30],
-                3: [22, 45],
-                4: [30, 60],
-            } '''
             view_switch = {
                 1: ['value', 'rgba(0,0,0,0.5)'],
-                2: ['macd sig', 'rgba(208,128,208,0.9) rgba(128,208,248,0.9)'],
+                2: ['macd signal', 'rgba(208,128,208,0.9) rgba(128,208,248,0.9)'],
             } 
             for i in data:
                 df = pd.read_json(data.get(i), orient="split")
                 params = view_switch.get(view)
                 fig = px.line(df, x='date', y=params[0].split()[0])
+                fig.update_layout(title=i, title_x=0.5)
                 fig.update_traces(line_color=params[1].split()[0])
                 if len(params[0].split()) > 1:
                     for j in range(len(params[0].split())-1):
-                        fig.add_scatter(x=df['date'], y=df[params[0].split()[j+1]], mode='lines', line_color=params[1].split()[j+1], line_shape='spline')
+                        fig.add_scatter(x=df['date'], y=df[params[0].split()[j+1]], mode='lines', line_color=params[1].split()[j+1], line_shape='spline', name=params[0].split()[j-1])
                 fig.update_xaxes(range=[term_switch.get(scale)[0], now])
                 fig.update_yaxes(range=[min(df[params[0].split()[0]][:term_switch.get(scale)[1]])*.99, max(df[params[0].split()[0]][:term_switch.get(scale)[1]])*1.01])
                 graphs.append(dbc.Row([
-                    html.H5(i),
-                    dcc.Graph(figure=fig),
+                    dcc.Graph(figure=fig, config={'displayModeBar': False}),
                 ]))
-                '''fig1 = px.line(df, x='date', y='value')
-                fig1.update_traces(line_color='rgba(0,0,0,0.5)')
-                fig1.update_xaxes(range=[term_switch.get(scale)[0], now])
-                fig1.update_yaxes(range=[min(df['value'][:term_switch.get(scale)[1]])*.99, max(df['value'][:term_switch.get(scale)[1]])*1.01])
-                fig2 = px.line(get_macd(df), x='date', y='macd')
-                fig2.update_traces(line_color='rgba(208,128,208,0.8)')
-                fig2.add_scatter(x=df['date'], y=get_macd(df)['sig'], mode='lines', line_color='rgba(128,208,248,0.8)', line_shape='spline')
-                fig2.update_xaxes(range=[term_switch.get(scale)[0], now])
-                fig2.update_yaxes(range=[min(get_macd(df)['macd'][:term_switch.get(scale)[1]])*.99, max(get_macd(df)['macd'][:term_switch.get(scale)[1]])*1.01])
-                graphs.append(dbc.Row([
-                    html.H5(i),
-                    dcc.Tabs([
-                        dcc.Tab(label="Values", children=[
-                            dcc.Graph(figure=fig1)
-                        ]),
-                        dcc.Tab(label="MACD", children=[
-                            dcc.Graph(figure=fig2)
-                        ]),
-                    ]),
-                ]))'''
             return [i for i in graphs]
 
     # Debugging output - REMOVE LATER!
@@ -250,7 +211,7 @@ def main():
         ema12 = df['value'].ewm(span=12, adjust=False).mean()
         ema26 = df['value'].ewm(span=26, adjust=False).mean()
         df['macd'] = [round(ema12[i] - ema26[i], 2) for i in range(len(ema12))]
-        df['sig'] = df['macd'].ewm(span=9, adjust=False).mean()
+        df['signal'] = df['macd'].ewm(span=9, adjust=False).mean()
         return df.to_json(date_format="iso", orient="split")
 
     def get_wma(vals, dur):
@@ -280,7 +241,7 @@ def main():
         ema12 = df['value'].ewm(span=12, adjust=False).mean()
         ema26 = df['value'].ewm(span=26, adjust=False).mean()
         df['macd'] = [round(ema12[i] - ema26[i], 2) for i in range(len(ema12))]
-        df['sig'] = df['macd'].ewm(span=9, adjust=False).mean()
+        df['signal'] = df['macd'].ewm(span=9, adjust=False).mean()
         return df
 
     app.run_server(port='8080', debug=True)

@@ -1,3 +1,7 @@
+#sidebar {
+    min-height: 100vh;
+}
+
 #sidebar, #content {
     padding: 30px;
 }
@@ -12,8 +16,8 @@
     margin-bottom: 30px;
 }
 
-#content {
-    min-height: 100vh !important;
+#content h5 {
+    width: 100%;
 }
 
 .metrics {
