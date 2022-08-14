@@ -179,6 +179,8 @@ def main():
             for i in data:
                 df = pd.read_json(data.get(i), orient="split")
                 params = view_switch.get(view)
+                minval = min(df[params[0].split()[0]][:term_switch.get(scale)[1]]) - abs((min(df[params[0].split()[0]][:term_switch.get(scale)[1]]))*.01)
+                maxval = max(df[params[0].split()[0]][:term_switch.get(scale)[1]]) + abs((max(df[params[0].split()[0]][:term_switch.get(scale)[1]]))*.01)
                 fig = px.line(df, x='date', y=params[0].split()[0])
                 fig.update_layout(title=i, title_x=0.5)
                 fig.update_traces(line_color=params[1].split()[0])
@@ -186,7 +188,7 @@ def main():
                     for j in range(len(params[0].split())-1):
                         fig.add_scatter(x=df['date'], y=df[params[0].split()[j+1]], mode='lines', line_color=params[1].split()[j+1], line_shape='spline', name=params[0].split()[j-1])
                 fig.update_xaxes(range=[term_switch.get(scale)[0], now])
-                fig.update_yaxes(range=[min(df[params[0].split()[0]][:term_switch.get(scale)[1]])*.99, max(df[params[0].split()[0]][:term_switch.get(scale)[1]])*1.01])
+                fig.update_yaxes(range=[minval, maxval])
                 graphs.append(dbc.Row([
                     dcc.Graph(figure=fig, config={'displayModeBar': False}),
                 ]))
