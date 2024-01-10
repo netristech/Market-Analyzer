@@ -1,0 +1,9 @@
+[Dd][Aa][Tt][Aa]/
+*.temp
+*.tmp
+*.key
+*.priv
+*.log
+*.conf
+*.cnf
+*.config
