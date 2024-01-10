@@ -38,6 +38,7 @@ def main():
     two_week = now - timedelta(days=14)
     one_week = now - timedelta(days=7)
 
+    # Dash code to build sidebar of WebUI
     sidebar = dbc.Col([
         dbc.FormGroup([
             html.Label("Enter symbol(s) to watch."),
@@ -84,6 +85,7 @@ def main():
         ])
     ], md=2, id="sidebar", className="bg-dark text-white")
 
+    # Dash code to build content area of WebUI
     content = dbc.Col([
         dbc.Alert(
             "Invalid input. Error was: ",
@@ -129,13 +131,15 @@ def main():
         prevent_initial_call=True,
     )   
     def get_data(n_clicks, tickers):
+        # Set name of time series data to get from API
+        api_func = "TIME_SERIES_WEEKLY_ADJUSTED"
         if len(tickers) > 1:
             data = {}
             for ticker in tickers.replace(',', ' ').split():
                 ticker = ticker.upper()
                 if not re.search('^[A-Z^]{1}[A-Z-=]{0,7}(?<=[A-Z])$', ticker):
                     return json.dumps({"error": f"Invalid characters or length in ticker: {ticker}"})
-                resp = requests.get(f"https://www.alphavantage.co/query?function=TIME_SERIES_WEEKLY_ADJUSTED&symbol={ticker}&outputsize=full&apikey=9LVE9OGAKH31RPWM&datatype=json")
+                resp = requests.get(f"https://www.alphavantage.co/query?function={api_func}&symbol={ticker}&outputsize=full&apikey=9LVE9OGAKH31RPWM&datatype=json")
                 if "Error Message" in json.loads(resp.content):
                     return json.dumps({"error": f"Invalid ticker in input: {ticker}"})
                 else:
