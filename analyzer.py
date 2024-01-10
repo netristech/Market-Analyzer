@@ -23,6 +23,7 @@ from datetime import datetime
 from datetime import timedelta
 
 def main():
+    # initialize
     app = dash.Dash(external_stylesheets=[dbc.themes.BOOTSTRAP])
     pd.options.plotting.backend = "plotly"
     key = "Weekly Adjusted Time Series"
