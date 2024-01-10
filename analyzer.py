@@ -221,6 +221,7 @@ def main():
         df['signal'] = df['macd'].ewm(span=9, adjust=False).mean()
         return df.to_json(date_format="iso", orient="split")
 
+    # Function that returns the Weighted Moving Average
     def get_wma(vals, dur):
         wvals = []
         weights = [i + 1 for i in range(dur)][::-1]
