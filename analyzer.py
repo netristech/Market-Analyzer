@@ -255,7 +255,7 @@ def main():
         df['signal'] = df['macd'].ewm(span=9, adjust=False).mean()
         return df
 
-    app.run_server(port='8080', debug=True)
+    app.run_server(host=dev-server.killerbee.local port='8080', debug=True)
 
 if __name__ == "__main__":
     main()
