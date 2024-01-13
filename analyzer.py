@@ -76,14 +76,14 @@ def main():
                 n_clicks=0,
                 children='Analyze',
                 color='primary',
-                block=True
+                #block=True
             ),
             dbc.Button(
                 id='save-btn',
                 n_clicks=0,
                 children='Save',
                 color='secondary',
-                block=True
+                #block=True
             ),            
         ])
     ], md=2, id="sidebar", className="bg-dark text-white")
