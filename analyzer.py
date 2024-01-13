@@ -43,7 +43,7 @@ def main():
     # Dash code to build sidebar of WebUI
     sidebar = dbc.Col([
         #dbc.FormGroup([
-        dbc.inputGroup([
+        dbc.InputGroup([
             html.Label("Enter symbol(s) to watch."),
             dcc.Input(
                 id='watch-tickers',
