@@ -11,8 +11,10 @@ import requests
 import statistics
 import json
 import dash
-import dash_core_components as dcc
-import dash_html_components as html
+#import dash_core_components as dcc
+from dash import dcc
+#import dash_html_components as html
+from dash import html
 import dash_bootstrap_components as dbc
 from dash.dependencies import Input, Output, State
 import plotly.express as px
@@ -40,7 +42,8 @@ def main():
 
     # Dash code to build sidebar of WebUI
     sidebar = dbc.Col([
-        dbc.FormGroup([
+        #dbc.FormGroup([
+        dbc.inputGroup([
             html.Label("Enter symbol(s) to watch."),
             dcc.Input(
                 id='watch-tickers',
