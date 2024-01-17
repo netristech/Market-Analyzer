@@ -11,7 +11,7 @@
     max-width: 13%;
 }
 
-#sidebar * {
+#sidebar input, #graph-selector, #term-selector, .btn {
     width: 100%;
     margin-bottom: 30px;
 }
