@@ -50,7 +50,7 @@ def main():
                 id='watch-tickers',
                 placeholder='Enter symbol(s)',
                 type='text',
-                pattern='[A-Za-z-=^ ,]+',
+                pattern='[A-Za-z-=^ ,]{1,6}',
                 value=''
             ),
             html.Label("Graph Scale"),
@@ -77,20 +77,10 @@ def main():
                 className="text-dark",
                 clearable=False,
             ),
-            dbc.Button(
-                id='lookup-btn',
-                n_clicks=0,
-                children='Analyze',
-                color='primary',
-                #block=True
-            ),
-            dbc.Button(
-                id='save-btn',
-                n_clicks=0,
-                children='Save',
-                color='secondary',
-                #block=True
-            ),            
+            html.Div([
+                dbc.Button("Analyze", id="lookup-btn", n_clicks=0, color="primary"),
+                dbc.Button("Save", id="save-btn", n_clicks=0, color="secondary")
+            ], className="d-grid gap-2")           
         ])
     ], md=2, id="sidebar", className="bg-dark text-white")
 
