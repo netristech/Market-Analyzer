@@ -6,7 +6,7 @@
     padding: 30px;
 }
 
-#sidebar input, .input-group div {
+#sidebar input, #sidebar .input-group div, #term-selector, #graph-selector {
     width: 100%;
     margin-bottom: 30px;
 }
