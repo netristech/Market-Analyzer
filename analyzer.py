@@ -11,14 +11,11 @@ import requests
 import statistics
 import json
 import dash
-#import dash_core_components as dcc
 from dash import dcc
-#import dash_html_components as html
 from dash import html
 import dash_bootstrap_components as dbc
 from dash.dependencies import Input, Output, State
 import plotly.express as px
-#import plotly.graph_objs as go
 import pandas as pd
 import numpy as np
 from datetime import datetime
@@ -181,7 +178,8 @@ def main():
                 2: ['macd signal', 'rgba(208,128,208,0.9) rgba(128,208,248,0.9)'],
             } 
             for i in data:
-                df = pd.read_json(data.get(i), orient="split")
+                #df = pd.read_json(data.get(i), orient="split")
+                df = pd.json_normalize(data.get(i))
                 params = view_switch.get(view)
                 minval = min(df[params[0].split()[0]][:term_switch.get(scale)[1]]) - abs((min(df[params[0].split()[0]][:term_switch.get(scale)[1]]))*.01)
                 maxval = max(df[params[0].split()[0]][:term_switch.get(scale)[1]]) + abs((max(df[params[0].split()[0]][:term_switch.get(scale)[1]]))*.01)
