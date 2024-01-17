@@ -6,18 +6,15 @@
     padding: 30px;
 }
 
-#sidebar .form-group {
-    position: fixed;
-    max-width: 13%;
+#sidebar * {
+    width: 100%;
 }
 
 #sidebar input, #graph-selector, #term-selector {
-    width: 100%;
     margin-bottom: 30px;
 }
 
 #sidebar .btn {
-    width: 100%;
     margin-bottom: 10px;
     display: block;
 }
