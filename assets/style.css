@@ -6,7 +6,7 @@
     padding: 30px;
 }
 
-#sidebar input, div {
+#sidebar input, #sidebar div {
     width: 100%;
     margin-bottom: 30px;
 }
