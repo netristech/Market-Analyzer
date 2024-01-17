@@ -11,9 +11,15 @@
     max-width: 13%;
 }
 
-#sidebar input, #graph-selector, #term-selector, .btn {
+#sidebar input, #graph-selector, #term-selector {
     width: 100%;
     margin-bottom: 30px;
+}
+
+#sidbar .btn {
+    width: 100%;
+    margin-bottom: 10px;
+    display: block;
 }
 
 #content h5 {
