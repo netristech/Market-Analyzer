@@ -180,7 +180,7 @@ def main():
         #Input("term-slider", "value"),
         Input("term-slider", "children"),
         #Input("graph-selector", "value"),
-        Input("graph-selector", "children")
+        Input("graph-selector", "children"),
         prevent_initial_call=True,
     )
     def draw_graphs(data, scale, view):
