@@ -11,7 +11,7 @@
     max-width: 13%;
 }
 
-#sidebar input, .rc-slider, #graph-selector {
+#sidebar input, .rc-slider, #graph-selector, #term-selector {
     width: 100%;
     margin-bottom: 30px;
 }
