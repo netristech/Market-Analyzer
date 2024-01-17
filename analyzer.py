@@ -53,14 +53,7 @@ def main():
                 pattern='[A-Za-z-=^ ,]+',
                 value=''
             ),
-            html.Label("Graph Scale"),        
-            # dcc.Slider(
-            #     id="term-slider",
-            #     min=1,
-            #     max=4,
-            #     marks={1: "1y", 2: "2y", 3: "5y", 4: "10y"},
-            #     value=1,
-            # ),
+            html.Label("Graph Scale"),
             dcc.Dropdown(
                 id="term-selector",
                 options=[
@@ -70,6 +63,7 @@ def main():
                     {"label": "10 Year", "value": 4},
                 ],
                 value=3,
+                className="text-dark",
                 clearable=False
             ),
             html.Label("Graph View"),
