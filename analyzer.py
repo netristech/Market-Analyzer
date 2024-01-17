@@ -80,7 +80,7 @@ def main():
             html.Div([
                 dbc.Button("Analyze", id="lookup-btn", n_clicks=0, color="primary"),
                 dbc.Button("Save", id="save-btn", n_clicks=0, color="secondary")
-            ], className="d-grid gap-2")           
+            ])           
         ])
     ], md=2, id="sidebar", className="bg-dark text-white")
 
