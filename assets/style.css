@@ -6,12 +6,13 @@
     padding: 30px;
 }
 
-#sidebar input, #graph-selector, #term-selector {
+#sidebar input, div {
     width: 100%;
     margin-bottom: 30px;
 }
 
 #sidebar .btn {
+    width: 100%;
     margin-bottom: 10px;
     display: block;
 }
