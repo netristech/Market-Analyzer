@@ -39,10 +39,10 @@ def main():
     one_month = now - timedelta(days=30)
     two_week = now - timedelta(days=14)
     one_week = now - timedelta(days=7)
+    five_day = now - timedelta(days=5)
 
     # Dash code to build sidebar of WebUI
     sidebar = dbc.Col([
-        #dbc.FormGroup([
         dbc.InputGroup([
             html.Label("Enter symbol(s) to watch."),
             dcc.Input(
@@ -79,6 +79,7 @@ def main():
                 #block=True
             ),
             dbc.Button(
+                'Save'
                 id='save-btn',
                 n_clicks=0,
                 children='Save',
@@ -211,8 +212,8 @@ def main():
     def print_data(data):
         return data'''
 
-    # Calculate graphing data, format, and return as Pandas DataFram object
     def format_data(data):
+        # Calculate graphing data, format, and return as Pandas DataFram object
         dates, vals = ([] for i in range(2))
         for i in data:
             dates.append(i)
@@ -224,8 +225,8 @@ def main():
         df['signal'] = df['macd'].ewm(span=9, adjust=False).mean()
         return df.to_json(date_format="iso", orient="split")
 
-    # Function that returns the Weighted Moving Average
     def get_wma(vals, dur):
+        # Function that returns the Weighted Moving Average
         wvals = []
         weights = [i + 1 for i in range(dur)][::-1]
         for i in range(len(vals)):
@@ -238,6 +239,7 @@ def main():
         return wvals
         
     def get_sma(vals, dur):
+        # Calculate and return the simple moving average
         svals = []
         for i in range(len(vals)):
             if i + dur >= len(vals):
