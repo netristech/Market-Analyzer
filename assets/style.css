@@ -6,7 +6,7 @@
     padding: 30px;
 }
 
-#sidebar input, #sidebar div {
+#sidebar input, .input-group div {
     width: 100%;
     margin-bottom: 30px;
 }
