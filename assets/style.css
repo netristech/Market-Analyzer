@@ -6,7 +6,7 @@
     padding: 30px;
 }
 
-#sidebar input, #term-selector, #graph-selector {
+#sidebar input, #term-selector, #graph-selector, #btn-div {
     width: 100%;
     margin-bottom: 30px;
 }
