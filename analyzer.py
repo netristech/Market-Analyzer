@@ -45,7 +45,8 @@ def main():
     sidebar = dbc.Col([
         dbc.InputGroup([
             html.Label("Enter symbol(s) to watch."),
-            dcc.Input(
+            #dcc.Input(
+            dbc.Input(
                 id='watch-tickers',
                 placeholder='Enter symbol(s)',
                 type='text',
@@ -53,24 +54,34 @@ def main():
                 value=''
             ),
             html.Label("Graph Scale"),        
-            dcc.Slider(
+            #dcc.Slider(
+            dbc.DropdownMenu([
+                dbc.DropdownMenuItem("1 year"),
+                dbc.DropdownMenuItem("2 years"),
+                dbc.DropdownMenuItem("5 years"),
+                dbc.DropdownMenuItem("10 years"),
+            ],
                 id="term-slider",
-                min=1,
-                max=4,
-                marks={1: "1y", 2: "2y", 3: "5y", 4: "10y"},
-                value=1,
+                #min=1,
+                #max=4,
+                #marks={1: "1y", 2: "2y", 3: "5y", 4: "10y"},
+                #value=1,
             ),
             html.Label("Graph View"),
-            dcc.Dropdown(
-                id="graph-selector",
-                options=[
-                    {"label": "Normal", "value": 1},
-                    {"label": "MACD", "value": 2},
-                ],
-                value=1,
-                className="text-dark",
-                clearable=False,
-            ),
+            dbc.DropdownMenu([
+                dbc.DropdownMenuItem("Normal"),
+                dbc.DropdownMenuItem("MACD"),
+            ], id="graph-selector"),
+            # dcc.Dropdown(
+            #     id="graph-selector",
+            #     options=[
+            #         {"label": "Normal", "value": 1},
+            #         {"label": "MACD", "value": 2},
+            #     ],
+            #     value=1,
+            #     className="text-dark",
+            #     clearable=False,
+            # ),
             dbc.Button(
                 id='lookup-btn',
                 n_clicks=0,
@@ -175,10 +186,10 @@ def main():
             data = json.loads(data)
             graphs = []        
             term_switch = {
-                1: [one_year, 52],
-                2: [two_year, 104],
-                3: [five_year, 261],
-                4: [ten_year, 521],
+                "1 year": [one_year, 52],
+                "2 years": [two_year, 104],
+                "5 years": [five_year, 261],
+                "10 years": [ten_year, 521],
             }
             view_switch = {
                 1: ['value', 'rgba(0,0,0,0.5)'],
