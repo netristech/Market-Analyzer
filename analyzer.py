@@ -79,7 +79,6 @@ def main():
                 #block=True
             ),
             dbc.Button(
-                'Save'
                 id='save-btn',
                 n_clicks=0,
                 children='Save',
