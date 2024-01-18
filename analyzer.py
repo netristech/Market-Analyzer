@@ -101,7 +101,7 @@ def main():
             html.Div(id="test"),
             html.Div(id="content"),
         ]),
-    ], md=10)
+    ], md=10, id="content")
     
     app.layout = dbc.Container([
         dbc.Row([sidebar, content],
