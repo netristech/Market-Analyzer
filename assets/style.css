@@ -21,6 +21,10 @@
     width: 100%;
 }
 
+#content .alert {
+    margin-top: 15px;
+}
+
 .metrics {
     margin: 0px !important;
 }

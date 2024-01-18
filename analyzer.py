@@ -21,6 +21,7 @@ import numpy as np
 from datetime import datetime
 from datetime import timedelta
 
+
 def main():
     # initialize
     app = dash.Dash(external_stylesheets=[dbc.themes.BOOTSTRAP])
@@ -178,8 +179,7 @@ def main():
                 2: ['macd signal', 'rgba(208,128,208,0.9) rgba(128,208,248,0.9)'],
             } 
             for i in data:
-                #df = pd.read_json(data.get(i), orient="split")
-                df = pd.json_normalize(data.get(i))
+                df = pd.read_json(data.get(i), orient="split")
                 params = view_switch.get(view)
                 minval = min(df[params[0].split()[0]][:term_switch.get(scale)[1]]) - abs((min(df[params[0].split()[0]][:term_switch.get(scale)[1]]))*.01)
                 maxval = max(df[params[0].split()[0]][:term_switch.get(scale)[1]]) + abs((max(df[params[0].split()[0]][:term_switch.get(scale)[1]]))*.01)
