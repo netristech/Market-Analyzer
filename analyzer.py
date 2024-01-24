@@ -20,13 +20,12 @@ import pandas as pd
 import numpy as np
 from datetime import datetime
 from datetime import timedelta
-
+from netris import fsops
 
 def main():
     # initialize
     app = dash.Dash(external_stylesheets=[dbc.themes.BOOTSTRAP])
     pd.options.plotting.backend = "plotly"
-    key = "Weekly Adjusted Time Series"
     now = datetime.now()
     ten_year = now - timedelta(days=3650)
     five_year = now - timedelta(days=1825)
@@ -129,14 +128,18 @@ def main():
     )   
     def get_data(n_clicks, tickers):
         # Set name of time series data to get from API
-        api_func = "TIME_SERIES_WEEKLY_ADJUSTED"
+        daily_func = "TIME_SERIES_DAILY"
+        daily_key = "Time Series (Daily)"
+        weekly_func = "TIME_SERIES_WEEKLY_ADJUSTED"
+        weekly_key = "Weekly Adjusted Time Series"
         if len(tickers) > 1:
             data = {}
             for ticker in tickers.replace(',', ' ').split():
                 ticker = ticker.upper()
                 if not re.search('^[A-Z^]{1}[A-Z-=]{0,7}(?<=[A-Z])$', ticker):
                     return json.dumps({"error": f"Invalid characters or length in ticker: {ticker}"})
-                resp = requests.get(f"https://www.alphavantage.co/query?function={api_func}&symbol={ticker}&outputsize=full&apikey=9LVE9OGAKH31RPWM&datatype=json")
+                dresp = requests.get(f"https://www.alphavantage.co/query?function={daily_func}&symbol={ticker}&outputsize=full&apikey=9LVE9OGAKH31RPWM&datatype=json")
+                wresp = requests.get(f"https://www.alphavantage.co/query?function={daily_func}&symbol={ticker}&outputsize=full&apikey=9LVE9OGAKH31RPWM&datatype=json")
                 if "Error Message" in json.loads(resp.content):
                     return json.dumps({"error": f"Invalid ticker in input: {ticker}"})
                 else:
@@ -243,11 +246,11 @@ def main():
             svals.append(s)
         return svals
 
-    def get_macd(df):
-        ema12 = df['value'].ewm(span=12, adjust=False).mean()
-        ema26 = df['value'].ewm(span=26, adjust=False).mean()
-        df['macd'] = [round(ema12[i] - ema26[i], 2) for i in range(len(ema12))]
-        df['signal'] = df['macd'].ewm(span=9, adjust=False).mean()
+    def get_macd(df, fast=12, slow=26, sig=9):
+        fast_ema = df['value'].ewm(span=fast, min_periods=fast).mean()
+        slow_ema = df['value'].ewm(span=slow, min_periods=slow).mean()
+        df['macd'] = [round(fast_ema[i] - slow_ema[i], 2) for i in range(len(fast_ema))]
+        df['signal'] = df['macd'].ewm(span=sig, min_periods=sig).mean()
         return df
 
     app.run_server(host='0.0.0.0', port='8080', debug=True)
