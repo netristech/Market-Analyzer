@@ -139,11 +139,19 @@ def main():
                 if not re.search('^[A-Z^]{1}[A-Z-=]{0,7}(?<=[A-Z])$', ticker):
                     return json.dumps({"error": f"Invalid characters or length in ticker: {ticker}"})
                 dresp = requests.get(f"https://www.alphavantage.co/query?function={daily_func}&symbol={ticker}&outputsize=full&apikey=9LVE9OGAKH31RPWM&datatype=json")
-                wresp = requests.get(f"https://www.alphavantage.co/query?function={daily_func}&symbol={ticker}&outputsize=full&apikey=9LVE9OGAKH31RPWM&datatype=json")
-                if "Error Message" in json.loads(resp.content):
+                wresp = requests.get(f"https://www.alphavantage.co/query?function={weekly_func}&symbol={ticker}&outputsize=full&apikey=9LVE9OGAKH31RPWM&datatype=json")
+                if (
+                    "Error Message" in json.loads(dresp.content) or
+                    "Error Message" in json.loads(wresp.content)
+                ):
                     return json.dumps({"error": f"Invalid ticker in input: {ticker}"})
                 else:
-                    data.update({ticker: format_data(json.loads(resp.content)[key])})
+                    data.update({
+                        ticker: {
+                            "daily_data": format_data(json.loads(dresp.content)[daily_key]),
+                            "weekly_data": format_data(json.loads(wresp.content)[weekly_key])
+                        }
+                    })
             return json.dumps(data)
     
     # Check for errors in data store and display bootstrap alert with error message
