@@ -148,8 +148,8 @@ def main():
                 else:
                     data.update({
                         ticker: {
-                            "daily_data": format_data(json.loads(dresp.content)[daily_key]),
-                            "weekly_data": format_data(json.loads(wresp.content)[weekly_key])
+                            "daily": format_data(json.loads(dresp.content)[daily_key], "2. high", "3. low"),
+                            "weekly": format_data(json.loads(wresp.content)[weekly_key], "2. high", "3. low")
                         }
                     })
             return json.dumps(data)
@@ -190,7 +190,7 @@ def main():
                 2: ['macd signal', 'rgba(208,128,208,0.9) rgba(128,208,248,0.9)'],
             } 
             for i in data:
-                df = pd.read_json(data.get(i), orient="split")
+                df = pd.read_json(data.get(i).get('weekly'), orient="split")
                 params = view_switch.get(view)
                 minval = min(df[params[0].split()[0]][:term_switch.get(scale)[1]]) - abs((min(df[params[0].split()[0]][:term_switch.get(scale)[1]]))*.01)
                 maxval = max(df[params[0].split()[0]][:term_switch.get(scale)[1]]) + abs((max(df[params[0].split()[0]][:term_switch.get(scale)[1]]))*.01)
@@ -216,17 +216,25 @@ def main():
     def print_data(data):
         return data'''
 
-    def format_data(data):
+    def format_data(data, h_key, l_key):
         # Calculate graphing data, format, and return as Pandas DataFram object
-        dates, vals = ([] for i in range(2))
-        for i in data:
-            dates.append(i)
-            vals.append(data[i]["5. adjusted close"])
-        df = pd.DataFrame(dict(date=dates, value=vals))
-        ema12 = df['value'].ewm(span=12, adjust=False).mean()
-        ema26 = df['value'].ewm(span=26, adjust=False).mean()
-        df['macd'] = [round(ema12[i] - ema26[i], 2) for i in range(len(ema12))]
-        df['signal'] = df['macd'].ewm(span=9, adjust=False).mean()
+        dates, h_vals, l_vals = ([] for i in range(3))
+        for d in data:
+            dates.append(d)
+            h_vals.append(data[d][h_key])
+            l_vals.append(data[d][l_key])
+        df = pd.DataFrame({
+            "date": dates,
+            "highs": h_vals,
+            "lows": l_vals
+        })
+        value = df['highs'] + df['lows'] / 2
+        df['value'] = df.index.map(value)
+        #df = pd.DataFrame(dict(date=dates, value=vals))
+        # ema12 = df['value'].ewm(span=12, adjust=False).mean()
+        # ema26 = df['value'].ewm(span=26, adjust=False).mean()
+        # df['macd'] = [round(ema12[i] - ema26[i], 2) for i in range(len(ema12))]
+        # df['signal'] = df['macd'].ewm(span=9, adjust=False).mean()
         return df.to_json(date_format="iso", orient="split")
 
     def get_wma(vals, dur):
