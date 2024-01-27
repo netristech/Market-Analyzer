@@ -102,6 +102,7 @@ def main():
         ]),
     ], md=10)
     
+    # Put UI Elements together
     app.layout = dbc.Container([
         dbc.Row([sidebar, content],
         className="text-dark"),
@@ -127,7 +128,7 @@ def main():
         prevent_initial_call=True,
     )   
     def get_data(n_clicks, tickers):
-        # Set name of time series data to get from API
+        # Set time series data to get from API
         daily_func = "TIME_SERIES_DAILY"
         daily_key = "Time Series (Daily)"
         weekly_func = "TIME_SERIES_WEEKLY_ADJUSTED"
@@ -176,7 +177,7 @@ def main():
         prevent_initial_call=True,
     )
     def draw_graphs(data, scale, view):
-        if data != None and len(data) > 0:
+        if data is not None and len(data) > 0:
             data = json.loads(data)
             graphs = []        
             term_switch = {
@@ -228,8 +229,8 @@ def main():
             "highs": h_vals,
             "lows": l_vals
         })
-        value = df['highs'] + df['lows'] / 2
-        df['value'] = df.index.map(value)
+        df['value'] = (df['highs'] + df['lows']) / 2
+        get_macd(df)
         #df = pd.DataFrame(dict(date=dates, value=vals))
         # ema12 = df['value'].ewm(span=12, adjust=False).mean()
         # ema26 = df['value'].ewm(span=26, adjust=False).mean()
@@ -265,7 +266,7 @@ def main():
     def get_macd(df, fast=12, slow=26, sig=9):
         fast_ema = df['value'].ewm(span=fast, min_periods=fast).mean()
         slow_ema = df['value'].ewm(span=slow, min_periods=slow).mean()
-        df['macd'] = [round(fast_ema[i] - slow_ema[i], 2) for i in range(len(fast_ema))]
+        df['macd'] = [round(fast_ema[i] - slow_ema[i], 2) for i in range(len(df['value']))]
         df['signal'] = df['macd'].ewm(span=sig, min_periods=sig).mean()
         return df
 
