@@ -149,8 +149,8 @@ def main():
                 else:
                     data.update({
                         ticker: {
-                            "daily": format_data(json.loads(dresp.content)[daily_key], "2. high", "3. low"),
-                            "weekly": format_data(json.loads(wresp.content)[weekly_key], "2. high", "3. low")
+                            "daily": format_data(json.loads(dresp.content).get(daily_key)),
+                            "weekly": format_data(json.loads(wresp.content).get(weekly_key))
                         }
                     })
             return json.dumps(data)
@@ -217,13 +217,14 @@ def main():
     def print_data(data):
         return data'''
 
-    def format_data(data, h_key, l_key):
+    def format_data(data):
         # Calculate graphing data, format, and return as Pandas DataFram object
+        h_key, l_key = "2. high", "3. low"
         dates, h_vals, l_vals = ([] for i in range(3))
         for d in data:
             dates.append(d)
-            h_vals.append(data[d][h_key])
-            l_vals.append(data[d][l_key])
+            h_vals.append(float(data.get(d).get(h_key)))
+            l_vals.append(float(data.get(d).get(l_key)))
         df = pd.DataFrame({
             "date": dates,
             "highs": h_vals,
