@@ -267,8 +267,10 @@ def main():
     def get_macd(df, fast=12, slow=26, sig=9):
         fast_ema = df['value'][::-1].ewm(span=fast, min_periods=fast).mean()
         slow_ema = df['value'][::-1].ewm(span=slow, min_periods=slow).mean()
-        df['macd'] = fast_ema - slow_ema
-        df['signal'] = df['macd'].ewm(span=sig, min_periods=sig).mean()
+        macd = fast_ema - slow_ema
+        signal = macd.ewm(span=sig, min_periods=sig).mean()
+        df['macd'] = df.index.map(macd)
+        df['signal'] = df.index.map(signal)
         return df
 
     app.run_server(host='0.0.0.0', port='8080', debug=True)
