@@ -265,9 +265,9 @@ def main():
         return svals
 
     def get_macd(df, fast=12, slow=26, sig=9):
-        fast_ema = df['value'].ewm(span=fast, min_periods=fast).mean()
-        slow_ema = df['value'].ewm(span=slow, min_periods=slow).mean()
-        df['macd'] = [round(fast_ema[i] - slow_ema[i], 2) for i in range(len(df['value']))]
+        fast_ema = df['value'][::-1].ewm(span=fast, min_periods=fast).mean()
+        slow_ema = df['value'][::-1].ewm(span=slow, min_periods=slow).mean()
+        df['macd'] = fast_ema - slow_ema
         df['signal'] = df['macd'].ewm(span=sig, min_periods=sig).mean()
         return df
 
