@@ -21,7 +21,7 @@ def create_dir(dir, **kwargs):
         else:
             if not kwargs.get('silent'):
                 print("[OK]")
-            return dir
+    return dir
 
 def list_dir(dir):
     # If directory <dir> exists, return the contents of the directory
