@@ -237,11 +237,6 @@ def main():
         val = (df['high'] + df['low']) / 2
         df['value'] = df.index.map(val)
         get_macd(df)
-        #df = pd.DataFrame(dict(date=dates, value=vals))
-        # ema12 = df['value'].ewm(span=12, adjust=False).mean()
-        # ema26 = df['value'].ewm(span=26, adjust=False).mean()
-        # df['macd'] = [round(ema12[i] - ema26[i], 2) for i in range(len(ema12))]
-        # df['signal'] = df['macd'].ewm(span=9, adjust=False).mean()
         return df.to_json(date_format="iso", orient="split")
 
     def get_wma(vals, dur):
