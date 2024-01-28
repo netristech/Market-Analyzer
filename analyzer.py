@@ -220,22 +220,22 @@ def main():
 
     def format_data(data):
         # Calculate graphing data, format, and return as Pandas DataFram object
-        h_key, l_key = "2. high", "3. low"
+        h_key, l_key, close, adj_close = "2. high", "3. low", "4. close", "5. adjusted close"
         dates, h_vals, l_vals, close, adj_close = ([] for i in range(5))
         for d in data:
             dates.append(d)
-            h_vals.append(float(data.get(d).get(h_key)))
-            l_vals.append(float(data.get(d).get(l_key)))
-            close.append(data.get(d).get("4. close"))
-            adj_close.append(data.get(d).get("5. adjusted close"))
+            adj = 1
+            if data.get(d).get(adj_close) and data.get(d).get(adj_close) != data.get(d).get(close):
+                adj = float(data.get(d).get(adj_close)) / float(data.get(d).get(close))
+            h_vals.append(float(data.get(d).get(h_key)) * adj)
+            l_vals.append(float(data.get(d).get(l_key)) * adj)
         df = pd.DataFrame({
             "date": dates,
-            "highs": h_vals,
-            "lows": l_vals,
-            "close": close,
-            "adj_close": adj_close
+            "high": h_vals,
+            "low": l_vals,
         })
-        df['value'] = (df['highs'] + df['lows']) / 2
+        val = (df['high'] + df['low']) / 2
+        df['value'] = df.index.map(val)
         get_macd(df)
         #df = pd.DataFrame(dict(date=dates, value=vals))
         # ema12 = df['value'].ewm(span=12, adjust=False).mean()
