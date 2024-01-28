@@ -228,7 +228,7 @@ def main():
             h_vals.append(float(data.get(d).get(h_key)))
             l_vals.append(float(data.get(d).get(l_key)))
             close.append(data.get(d).get("4. close"))
-            adj_close(data.get(d).get("5. adjusted close"))
+            adj_close.append(data.get(d).get("5. adjusted close"))
         df = pd.DataFrame({
             "date": dates,
             "highs": h_vals,
