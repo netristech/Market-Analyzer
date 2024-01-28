@@ -152,7 +152,6 @@ def main():
                 if j is not None:
                     data.update(j)
                 else:
-                    api_calls += 1 #REMOVE
                     #dresp = requests.get(f"https://www.alphavantage.co/query?function={daily_func}&symbol={ticker}&outputsize=full&apikey=9LVE9OGAKH31RPWM&datatype=json")
                     wresp = requests.get(f"https://www.alphavantage.co/query?function={weekly_func}&symbol={ticker}&outputsize=full&apikey=9LVE9OGAKH31RPWM&datatype=json")
                     if (
@@ -169,6 +168,7 @@ def main():
                             }
                         }
                         data.update(j)
+                        data.update(api_calls=api_calls + 1)
                         fsops.write_file(j, f"{data_dir}/{ticker}-{timestamp}.json", type="json", silent=True)
             return json.dumps(data)
     
@@ -229,11 +229,11 @@ def main():
     # Debugging output - REMOVE LATER!
     @app.callback(
         Output("test", "children"),
-        #Input("data", "data"),
+        Input("data", "data"),
         prevent_initial_call=True,
     )
-    def print_data():
-        return f"API Calls this session: {api_calls}"
+    def print_data(data):
+        return f"API Calls this session: {data.get('api_calls')}"
 
     def format_data(data):
         # Calculate graphing data, format, and return as Pandas DataFram object
