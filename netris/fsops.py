@@ -8,17 +8,20 @@ from cryptography.fernet import Fernet
 # import internal modules
 from netris.printing import inline_print
 
-def create_dir(dir):
+def create_dir(dir, **kwargs):
     # Create the directory <dir> if it does not already exist
     if not os.path.exists(dir):
-        inline_print(f"Creating {dir} directory... ")
+        if not kwargs.get('silent'):
+            inline_print(f"Creating {dir} directory... ")
         try:
             os.makedirs(dir)
         except:
-            print("[FAILED]")
+            if not kwargs.get('silent'):
+                print("[FAILED]")
         else:
-            print("[OK]")
-    return dir
+            if not kwargs.get('silent'):
+                print("[OK]")
+            return dir
 
 def list_dir(dir):
     # If directory <dir> exists, return the contents of the directory
