@@ -4,12 +4,17 @@
 # Version: 0.65
 # Author: Brian Dunham (Netris)
 #
+# NOTICE: Due to AlphaVantage severly limiting their free API, this project
+# will soon be converted to use the yfinance Python module. Please note that
+# this module is not officially supported by Yahoo. Use at your own risk;
+# abuse could result in your IP being banned
 
 # Import modules
 import re
 import requests
 import statistics
 import json
+import os
 import dash
 from dash import dcc
 from dash import html
@@ -27,6 +32,7 @@ def main():
     app = dash.Dash(external_stylesheets=[dbc.themes.BOOTSTRAP])
     pd.options.plotting.backend = "plotly"
     now = datetime.now()
+    timestamp = now.strftime('%Y%m%d')
     ten_year = now - timedelta(days=3650)
     five_year = now - timedelta(days=1825)
     two_year = now - timedelta(days=730)
@@ -37,6 +43,8 @@ def main():
     two_week = now - timedelta(days=14)
     one_week = now - timedelta(days=7)
     five_day = now - timedelta(days=5)
+    data_dir = fsops.create_dir(f"{os.getcwd()}\data", silent=True)
+    api_calls = 0 # REMOVE
 
     # Dash code to build sidebar of WebUI
     sidebar = dbc.Col([
@@ -97,7 +105,7 @@ def main():
         ),        
         html.H3(id="time", className="text-center"),
         dcc.Loading([
-            html.Div(id="test"),
+            html.Div(id="test"), # REMOVE
             html.Div(id="content"),
         ]),
     ], md=10)
@@ -129,30 +137,39 @@ def main():
     )   
     def get_data(n_clicks, tickers):
         # Set time series data to get from API
-        daily_func = "TIME_SERIES_DAILY"
-        daily_key = "Time Series (Daily)"
-        weekly_func = "TIME_SERIES_WEEKLY_ADJUSTED"
-        weekly_key = "Weekly Adjusted Time Series"
         if len(tickers) > 1:
+            # daily_func = "TIME_SERIES_DAILY"
+            # daily_key = "Time Series (Daily)"
+            weekly_func = "TIME_SERIES_WEEKLY_ADJUSTED"
+            weekly_key = "Weekly Adjusted Time Series"
             data = {}
             for ticker in tickers.replace(',', ' ').split():
                 ticker = ticker.upper()
+                # Validate ticker symbol characters and length
                 if not re.search('^[A-Z^]{1}[A-Z-=]{0,7}(?<=[A-Z])$', ticker):
                     return json.dumps({"error": f"Invalid characters or length in ticker: {ticker}"})
-                dresp = requests.get(f"https://www.alphavantage.co/query?function={daily_func}&symbol={ticker}&outputsize=full&apikey=9LVE9OGAKH31RPWM&datatype=json")
-                wresp = requests.get(f"https://www.alphavantage.co/query?function={weekly_func}&symbol={ticker}&outputsize=full&apikey=9LVE9OGAKH31RPWM&datatype=json")
-                if (
-                    "Error Message" in json.loads(dresp.content) or
-                    "Error Message" in json.loads(wresp.content)
-                ):
-                    return json.dumps({"error": f"Invalid ticker in input: {ticker}"})
+                j = fsops.read_file(f"{data_dir}/{ticker}-{timestamp}.json", type="json", silent=True)
+                if j is not None:
+                    data.update(j)
                 else:
-                    data.update({
-                        ticker: {
-                            "daily": format_data(json.loads(dresp.content).get(daily_key)),
-                            "weekly": format_data(json.loads(wresp.content).get(weekly_key))
+                    api_calls += 1 #REMOVE
+                    #dresp = requests.get(f"https://www.alphavantage.co/query?function={daily_func}&symbol={ticker}&outputsize=full&apikey=9LVE9OGAKH31RPWM&datatype=json")
+                    wresp = requests.get(f"https://www.alphavantage.co/query?function={weekly_func}&symbol={ticker}&outputsize=full&apikey=9LVE9OGAKH31RPWM&datatype=json")
+                    if (
+                        #"Error Message" in json.loads(dresp.content) or
+                        "Error Message" in json.loads(wresp.content)
+                    ):
+                        return json.dumps({"error": f"Invalid ticker in input: {ticker}"})
+                    else:
+                        j = {
+                            ticker: {
+                                #"daily": format_data(json.loads(dresp.content).get(daily_key)),
+                                "daily": {},
+                                "weekly": format_data(json.loads(wresp.content).get(weekly_key))
+                            }
                         }
-                    })
+                        data.update(j)
+                        fsops.write_file(j, f"{data_dir}/{ticker}-{timestamp}.json", type="json", silent=True)
             return json.dumps(data)
     
     # Check for errors in data store and display bootstrap alert with error message
@@ -210,29 +227,29 @@ def main():
             return [i for i in graphs]
 
     # Debugging output - REMOVE LATER!
-    '''@app.callback(
+    @app.callback(
         Output("test", "children"),
-        Input("data", "data"),
+        #Input("data", "data"),
         prevent_initial_call=True,
     )
-    def print_data(data):
-        return data'''
+    def print_data():
+        return f"API Calls this session: {api_calls}"
 
     def format_data(data):
         # Calculate graphing data, format, and return as Pandas DataFram object
-        h_key, l_key, close, adj_close = "2. high", "3. low", "4. close", "5. adjusted close"
-        dates, h_vals, l_vals, close, adj_close = ([] for i in range(5))
+        h_key, l_key, close_key, adj_close_key = "2. high", "3. low", "4. close", "5. adjusted close"
+        dates, high, low, close, adj_close = ([] for i in range(5))
         for d in data:
             dates.append(d)
             adj = 1
-            if data.get(d).get(adj_close) and data.get(d).get(adj_close) != data.get(d).get(close):
-                adj = float(data.get(d).get(adj_close)) / float(data.get(d).get(close))
-            h_vals.append(float(data.get(d).get(h_key)) * adj)
-            l_vals.append(float(data.get(d).get(l_key)) * adj)
+            if data.get(d).get(adj_close_key) and data.get(d).get(adj_close_key) != data.get(d).get(close_key):
+                adj = float(data.get(d).get(adj_close_key)) / float(data.get(d).get(close_key))
+            high.append(float(data.get(d).get(h_key)) * adj)
+            low.append(float(data.get(d).get(l_key)) * adj)
         df = pd.DataFrame({
             "date": dates,
-            "high": h_vals,
-            "low": l_vals,
+            "high": high,
+            "low": low,
         })
         val = (df['high'] + df['low']) / 2
         df['value'] = df.index.map(val)
