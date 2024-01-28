@@ -44,7 +44,8 @@ def main():
     one_week = now - timedelta(days=7)
     five_day = now - timedelta(days=5)
     data_dir = fsops.create_dir(f"{os.getcwd()}/data", silent=True)
-    api_calls = 0 # REMOVE
+    api_calls = fsops.read_file(f"{data_dir}/api-calls-{timestamp}", silent=True) # REMOVE
+    api_calls = 0 if api_calls is None else int(api_calls) # REMOVE
 
     # Dash code to build sidebar of WebUI
     sidebar = dbc.Col([
@@ -168,7 +169,7 @@ def main():
                             }
                         }
                         data.update(j)
-                        data.update(call_count=api_calls + 1)
+                        fsops.write_file(str(api_calls + 1), f"{data_dir}/api-calls-{timestamp}", silent=True)
                         fsops.write_file(j, f"{data_dir}/{ticker}-{timestamp}.json", type="json", silent=True)
             return json.dumps(data)
     
@@ -227,14 +228,13 @@ def main():
             return [i for i in graphs]
 
     # Debugging output - REMOVE LATER!
-    @app.callback(
-        Output("test", "children"),
-        Input("data", "data"),
-        prevent_initial_call=True,
-    )
-    def print_data(data):
-        data = json.loads(data)
-        return f"API Calls this session: {str(data.get('call_count'))}"
+    # @app.callback(
+    #     Output("test", "children"),
+    #     Input("data", "data"),
+    #     prevent_initial_call=True,
+    # )
+    # def print_data(data):
+    #     return data
 
     def format_data(data):
         # Calculate graphing data, format, and return as Pandas DataFram object
