@@ -43,7 +43,7 @@ def main():
     two_week = now - timedelta(days=14)
     one_week = now - timedelta(days=7)
     five_day = now - timedelta(days=5)
-    data_dir = fsops.create_dir(f"{os.getcwd()}\data", silent=True)
+    data_dir = fsops.create_dir(f"{os.getcwd()}/data", silent=True)
     api_calls = 0 # REMOVE
 
     # Dash code to build sidebar of WebUI
@@ -233,7 +233,8 @@ def main():
         prevent_initial_call=True,
     )
     def print_data(data):
-        return f"API Calls this session: {data.get('call_count')}"
+        data = json.loads(data)
+        return f"API Calls this session: {str(data.get('call_count'))}"
 
     def format_data(data):
         # Calculate graphing data, format, and return as Pandas DataFram object
