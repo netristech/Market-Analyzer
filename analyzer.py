@@ -205,8 +205,8 @@ def main():
                 fig.update_yaxes(range=[minval, maxval])
                 graphs.append(dbc.Row([
                     dcc.Graph(figure=fig, config={'displayModeBar': False}),
-                    html.Div([f"<p>{x}</p>" for x in df['close']]),
-                    html.Div([f"<p>{x}</p>" for x in df['adj_close']])
+                    html.Div([html.p(x) for x in df['close']]),
+                    html.Div([html.p(x) for x in df['adj_close']])
                 ]))
             return [i for i in graphs]
 
@@ -222,17 +222,19 @@ def main():
     def format_data(data):
         # Calculate graphing data, format, and return as Pandas DataFram object
         h_key, l_key = "2. high", "3. low"
-        dates, h_vals, l_vals = ([] for i in range(3))
+        dates, h_vals, l_vals, close, adj_close = ([] for i in range(5))
         for d in data:
             dates.append(d)
             h_vals.append(float(data.get(d).get(h_key)))
             l_vals.append(float(data.get(d).get(l_key)))
+            close.append(data.get(d).get("4. close"))
+            adj_close(data.get(d).get("5. adjusted close"))
         df = pd.DataFrame({
             "date": dates,
             "highs": h_vals,
             "lows": l_vals,
-            "close": data.get(d).get("4. close"),
-            "adj_close": data.get(d).get("5. adjusted close")
+            "close": close,
+            "adj_close": adj_close
         })
         df['value'] = (df['highs'] + df['lows']) / 2
         get_macd(df)
