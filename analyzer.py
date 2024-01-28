@@ -168,7 +168,7 @@ def main():
                             }
                         }
                         data.update(j)
-                        data.update(api_calls=api_calls + 1)
+                        data.update(call_count=api_calls + 1)
                         fsops.write_file(j, f"{data_dir}/{ticker}-{timestamp}.json", type="json", silent=True)
             return json.dumps(data)
     
@@ -233,7 +233,7 @@ def main():
         prevent_initial_call=True,
     )
     def print_data(data):
-        return f"API Calls this session: {data.get('api_calls')}"
+        return f"API Calls this session: {data.get('call_count')}"
 
     def format_data(data):
         # Calculate graphing data, format, and return as Pandas DataFram object
