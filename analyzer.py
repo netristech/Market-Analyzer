@@ -205,13 +205,7 @@ def main():
                 fig.update_yaxes(range=[minval, maxval])
                 graphs.append(dbc.Row([
                     dcc.Graph(figure=fig, config={'displayModeBar': False}),
-                    html.Table([
-                        html.Tr(
-                            html.Td(df['date'][x])
-                            html.Td(df['close'][x])
-                            html.Td(df['adj_close'][x])
-                        ) for x in range(len(df))
-                    ])
+                    dbc.Table.from_dataframe(df, striped=True, bordered=True, color="dark")
                 ]))
             return [i for i in graphs]
 
