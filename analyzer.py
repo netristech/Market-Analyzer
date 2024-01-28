@@ -23,6 +23,7 @@ from dash.dependencies import Input, Output, State
 import plotly.express as px
 import pandas as pd
 import numpy as np
+import yfinance as yf
 from datetime import datetime
 from datetime import timedelta
 from netris import fsops
@@ -46,6 +47,11 @@ def main():
     data_dir = fsops.create_dir(f"{os.getcwd()}/data", silent=True)
     api_calls = fsops.read_file(f"{data_dir}/api-calls-{timestamp}", silent=True) # REMOVE
     api_calls = 0 if api_calls is None else int(api_calls) # REMOVE
+
+    # Perform cleanup
+    for file in fsops.list_dir(data_dir):
+        if (now - datetime.fromtimestamp(os.path.getctime(file))) > (now - timedelta(days=1)):
+            os.remove(file)
 
     # Dash code to build sidebar of WebUI
     sidebar = dbc.Col([
