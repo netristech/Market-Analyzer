@@ -205,6 +205,8 @@ def main():
                 fig.update_yaxes(range=[minval, maxval])
                 graphs.append(dbc.Row([
                     dcc.Graph(figure=fig, config={'displayModeBar': False}),
+                    html.Div(df['close']),
+                    html.Div(df['adj_close'])
                 ]))
             return [i for i in graphs]
 
@@ -228,7 +230,9 @@ def main():
         df = pd.DataFrame({
             "date": dates,
             "highs": h_vals,
-            "lows": l_vals
+            "lows": l_vals,
+            "close": "4. close",
+            "adj_close": "5. adjusted close"
         })
         df['value'] = (df['highs'] + df['lows']) / 2
         get_macd(df)
