@@ -231,8 +231,8 @@ def main():
             "date": dates,
             "highs": h_vals,
             "lows": l_vals,
-            "close": "4. close",
-            "adj_close": "5. adjusted close"
+            "close": data.get(d).get("4. close"),
+            "adj_close": data.get(d).get("5. adjusted close")
         })
         df['value'] = (df['highs'] + df['lows']) / 2
         get_macd(df)
