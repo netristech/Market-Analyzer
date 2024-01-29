@@ -265,7 +265,7 @@ def main():
         val = (df['high'] + df['low']) / 2
         df['value'] = df.index.map(val)
         df['trend'] = df['value'].rolling(25).mean()
-        get_macd(df)
+        #get_macd(df)
         return df.to_json(date_format="iso", orient="split")
 
     def get_wma(vals, dur):
