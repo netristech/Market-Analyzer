@@ -264,6 +264,7 @@ def main():
         })
         val = (df['high'] + df['low']) / 2
         df['value'] = df.index.map(val)
+        get_sma(df, 180)
         get_macd(df)
         return df.to_json(date_format="iso", orient="split")
 
