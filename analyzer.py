@@ -264,7 +264,7 @@ def main():
         })
         val = (df['high'] + df['low']) / 2
         df['value'] = df.index.map(val)
-        df['trend'] = get_sma(df, 180)
+        df['trend'] = df['value'].rolling(25).mean()
         get_macd(df)
         return df.to_json(date_format="iso", orient="split")
 
@@ -283,17 +283,15 @@ def main():
         
     def get_sma(df, dur):
         # Calculate and return the simple moving average
-        sma = df['value'].rolling(window=dur).mean()
-        return df.index.map(sma)
-        # svals = []
-        # for i in range(len(df['value'])):
-        #     if i + dur >= len(df['value']):
-        #         r = len(df['value']) - i
-        #         s = sum(df['value'][-r:]) / len(df['value'][-r:])
-        #     else:
-        #         s = sum(df['value'][i:i+dur]) / dur
-        #     svals.append(s)
-        # return svals
+        svals = []
+        for i in range(len(df['value'])):
+            if i + dur >= len(df['value']):
+                r = len(df['value']) - i
+                s = sum(df['value'][-r:]) / len(df['value'][-r:])
+            else:
+                s = sum(df['value'][i:i+dur]) / dur
+            svals.append(s)
+        return svals
 
     def get_macd(df, fast=12, slow=26, sig=9):
         fast_ema = df['value'][::-1].ewm(span=fast, min_periods=fast).mean()
