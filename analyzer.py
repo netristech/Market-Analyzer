@@ -264,7 +264,7 @@ def main():
         })
         val = (df['high'] + df['low']) / 2
         df['value'] = df.index.map(val)
-        get_sma(df, 180)
+        df['trend'] = get_sma(df, 180)
         get_macd(df)
         return df.to_json(date_format="iso", orient="split")
 
@@ -284,8 +284,7 @@ def main():
     def get_sma(df, dur):
         # Calculate and return the simple moving average
         sma = df['value'].rolling(window=dur).mean()
-        df['sma'] = df.index.map(sma)
-        return df
+        return df.index.map(sma)
         # svals = []
         # for i in range(len(df['value'])):
         #     if i + dur >= len(df['value']):
