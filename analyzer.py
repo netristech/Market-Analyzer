@@ -50,7 +50,11 @@ def main():
 
     # Perform cleanup
     for file in fsops.list_dir(data_dir):
-        if (now - datetime.fromtimestamp(os.path.getctime(f"{data_dir}/{file}"))) > (now - timedelta(days=1)):
+        if (
+            len(file.split('-')) > 1 and
+            file.split('-')[-1].isnumeric() and
+            (now - timedelta(days=1)) > (datetime.strptime(file.split('-')[-1], "%Y%m%d") +  timedelta(days=1))
+        ):
             os.remove(f"{data_dir}/{file}")
 
     # Dash code to build sidebar of WebUI
