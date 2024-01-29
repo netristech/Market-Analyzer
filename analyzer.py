@@ -264,8 +264,9 @@ def main():
         })
         val = (df['high'] + df['low']) / 2
         df['value'] = df.index.map(val)
-        df['trend'] = df['value'].rolling(25).mean()
-        #get_macd(df)
+        #df['trend'] = df['value'].rolling(25).mean()
+        df['trend'] = get_sma(df, 25)
+        get_macd(df)
         return df.to_json(date_format="iso", orient="split")
 
     def get_wma(vals, dur):
@@ -291,7 +292,7 @@ def main():
             else:
                 s = sum(df['value'][i:i+dur]) / dur
             svals.append(s)
-        return svals
+        return df.index.map(svals)
 
     def get_macd(df, fast=12, slow=26, sig=9):
         fast_ema = df['value'][::-1].ewm(span=fast, min_periods=fast).mean()
