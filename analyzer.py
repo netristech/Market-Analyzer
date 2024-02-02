@@ -272,7 +272,7 @@ def main():
                 })
                 val = (df['high'] + df['low']) / 2
                 df['value'] = df.index.map(val)
-                df['trend'] = get_sma(df, 180)
+                df['trend'] = df.index.map(get_sma(df, 180))
                 #df['trend'] = df['value'][::-1].rolling(25).mean()
                 #df['trend'] = df.index.map(get_sma(df, 25))
                 get_macd(df)
@@ -305,7 +305,7 @@ def main():
             else:
                 s = sum(vals[i-dur:i]) / dur
             svals.append(s)
-        return df.index.map(svals)
+        return svals
 
     def get_macd(df, fast=12, slow=26, sig=9):
         fast_ema = df['value'][::-1].ewm(span=fast, min_periods=fast).mean()
