@@ -266,7 +266,7 @@ def main():
         })
         val = (df['high'] + df['low']) / 2
         df['value'] = df.index.map(val)
-        get_sma(df, 180)
+        df['trend'] = get_sma(df, 180)
         #df['trend'] = df['value'][::-1].rolling(25).mean()
         #df['trend'] = df.index.map(get_sma(df, 25))
         get_macd(df)
@@ -288,8 +288,7 @@ def main():
     def get_sma(df, dur):
         # Calculate and return the simple moving average
         sma = df['value'][::-1].rolling(dur, min_periods=dur).mean()
-        df[f'sma_{str(dur)}'] = df.index.map(sma)
-        return df
+        return df.index.map(sma)
         # svals = []
         # for i in range(len(vals)):
         #     if i + dur >= len(vals):
