@@ -284,15 +284,9 @@ def main():
         
     def get_sma(df, dur):
         # Calculate and return the simple moving average
-        svals = []
-        for i in range(len(df['value'])):
-            if i + dur >= len(df['value']):
-                r = len(df['value']) - i
-                s = sum(df['value'][-r:]) / len(df['value'][-r:])
-            else:
-                s = sum(df['value'][i:i+dur]) / dur
-            svals.append(s)        
-        return svals
+        sma = df['value'][::-1].rolling(span=dur, min_periods=dur).mean()
+        df[f'sma_{dur}'] = df.index.map(sma)
+        return df
         # svals = []
         # for i in range(len(vals)):
         #     if i + dur >= len(vals):
@@ -301,7 +295,7 @@ def main():
         #     else:
         #         s = sum(vals[i:i+dur]) / dur
         #     svals.append(s)
-        return svals
+        # return svals
 
     def get_macd(df, fast=12, slow=26, sig=9):
         fast_ema = df['value'][::-1].ewm(span=fast, min_periods=fast).mean()
