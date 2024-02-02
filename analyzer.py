@@ -218,7 +218,7 @@ def main():
             view_switch = {
                 1: ['value', 'rgba(0,0,0,0.5)'],
                 2: ['macd signal', 'rgba(208,128,208,0.9) rgba(128,208,248,0.9)'],
-                3: ['trend', 'rgba(0,64,224,0.9)']
+                3: ['sma-180', 'rgba(0,64,224,0.9)']
             } 
             for i in data:
                 df = pd.read_json(data.get(i).get('weekly'), orient="split")
@@ -266,7 +266,8 @@ def main():
         })
         val = (df['high'] + df['low']) / 2
         df['value'] = df.index.map(val)
-        df['trend'] = df['value'][::-1].rolling(25).mean()
+        get_sma(df, 180)
+        #df['trend'] = df['value'][::-1].rolling(25).mean()
         #df['trend'] = df.index.map(get_sma(df, 25))
         get_macd(df)
         return df.to_json(date_format="iso", orient="split")
