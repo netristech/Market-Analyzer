@@ -154,15 +154,18 @@ def main():
             # daily_key = "Time Series (Daily)"
             weekly_func = "TIME_SERIES_WEEKLY_ADJUSTED"
             weekly_key = "Weekly Adjusted Time Series"
-            data = {}
+            data = fsops.read_file(f"{data_dir}/data-{timestamp}.json", type="json", silent=True)
+            if data is None:
+                data = {}
+            changed = False
             for ticker in tickers.replace(',', ' ').split():
                 ticker = ticker.upper()
+                # Check if data is already present
+                if data.get(ticker):
+                    continue
                 # Validate ticker symbol characters and length
-                if not re.search('^[A-Z^]{1}[A-Z-=]{0,7}(?<=[A-Z])$', ticker):
+                elif not re.search('^[A-Z^]{1}[A-Z-=]{0,7}(?<=[A-Z])$', ticker):
                     return json.dumps({"error": f"Invalid characters or length in ticker: {ticker}"})
-                j = fsops.read_file(f"{data_dir}/{ticker}-{timestamp}.json", type="json", silent=True)
-                if j is not None:
-                    data.update(j)
                 else:
                     #dresp = requests.get(f"https://www.alphavantage.co/query?function={daily_func}&symbol={ticker}&outputsize=full&apikey=9LVE9OGAKH31RPWM&datatype=json")
                     wresp = requests.get(f"https://www.alphavantage.co/query?function={weekly_func}&symbol={ticker}&outputsize=full&apikey=9LVE9OGAKH31RPWM&datatype=json")
@@ -172,17 +175,18 @@ def main():
                     ):
                         return json.dumps({"error": f"Invalid ticker in input: {ticker}"})
                     else:
-                        j = {
+                        data.update({
                             ticker: {
                                 #"daily": format_data(json.loads(dresp.content).get(daily_key)),
                                 "daily": {},
-                                "weekly": format_data(json.loads(wresp.content).get(weekly_key))
+                                "weekly": json.loads(wresp.content).get(weekly_key),
                             }
-                        }
-                        data.update(j)
+                        })
+                        changed = True
                         fsops.write_file(str(api_calls + 1), f"{data_dir}/api-calls-{timestamp}", silent=True)
-                        fsops.write_file(j, f"{data_dir}/{ticker}-{timestamp}.json", type="json", silent=True)
-            return json.dumps(data)
+            if changed:
+                fsops.write_file(data, f"{data_dir}/data-{timestamp}.json", type="json", silent=True)
+            return json.dumps(format_data(data))
     
     # Check for errors in data store and display bootstrap alert with error message
     @app.callback(
@@ -251,26 +255,29 @@ def main():
     def format_data(data):
         # Calculate graphing data, format, and return as Pandas DataFram object
         h_key, l_key, close_key, adj_close_key = "2. high", "3. low", "4. close", "5. adjusted close"
-        dates, high, low, close, adj_close = ([] for i in range(5))
-        for d in data:
-            dates.append(d)
-            adj = 1
-            if data.get(d).get(adj_close_key) and data.get(d).get(adj_close_key) != data.get(d).get(close_key):
-                adj = float(data.get(d).get(adj_close_key)) / float(data.get(d).get(close_key))
-            high.append(float(data.get(d).get(h_key)) * adj)
-            low.append(float(data.get(d).get(l_key)) * adj)
-        df = pd.DataFrame({
-            "date": dates,
-            "high": high,
-            "low": low,
-        })
-        val = (df['high'] + df['low']) / 2
-        df['value'] = df.index.map(val)
-        df['trend'] = get_sma(df, 180)
-        #df['trend'] = df['value'][::-1].rolling(25).mean()
-        #df['trend'] = df.index.map(get_sma(df, 25))
-        get_macd(df)
-        return df.to_json(date_format="iso", orient="split")
+        for i in data.values():
+            for f,j in i.items():
+                dates, high, low = ([] for i in range(3))
+                for d,v in j.items():
+                    dates.append(d)
+                    adj = 1
+                    if v.get(adj_close_key) and v.get(adj_close_key) != v.get(close_key):
+                        adj = float(v.get(adj_close_key)) / float(v.get(close_key))
+                    high.append(float(v.get(h_key)) * adj)
+                    low.append(float(v.get(l_key)) * adj)
+                df = pd.DataFrame({
+                    "date": dates,
+                    "high": high,
+                    "low": low,
+                })
+                val = (df['high'] + df['low']) / 2
+                df['value'] = df.index.map(val)
+                df['trend'] = get_sma(df, 180)
+                #df['trend'] = df['value'][::-1].rolling(25).mean()
+                #df['trend'] = df.index.map(get_sma(df, 25))
+                get_macd(df)
+                i.update({f: df.to_json(date_format="iso", orient="split")})
+        return data
 
     def get_wma(vals, dur):
         # Function that returns the Weighted Moving Average
