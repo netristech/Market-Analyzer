@@ -88,6 +88,7 @@ def main():
                 options=[
                     {"label": "Normal", "value": 1},
                     {"label": "MACD", "value": 2},
+                    {"label": "Trend", "value": 3},
                 ],
                 value=1,
                 className="text-dark",
@@ -217,6 +218,7 @@ def main():
             view_switch = {
                 1: ['value', 'rgba(0,0,0,0.5)'],
                 2: ['macd signal', 'rgba(208,128,208,0.9) rgba(128,208,248,0.9)'],
+                3: ['trend', 'rgba(0,64,224,0.9)']
             } 
             for i in data:
                 df = pd.read_json(data.get(i).get('weekly'), orient="split")
