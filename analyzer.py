@@ -272,8 +272,7 @@ def main():
                 })
                 val = (df['high'] + df['low']) / 2
                 df['value'] = df.index.map(val)
-                df['trend'] = df.index.map(get_sma(df, 180))
-                #df['trend'] = df['value'][::-1].rolling(25).mean()
+                df['trend'] = df['value'][::-1].rolling(180).mean()
                 #df['trend'] = df.index.map(get_sma(df, 25))
                 get_macd(df)
                 i.update({f: df.to_json(date_format="iso", orient="split")})
