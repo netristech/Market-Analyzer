@@ -287,8 +287,8 @@ def main():
         
     def get_sma(df, dur):
         # Calculate and return the simple moving average
-        sma = df['value'][::-1].rolling(span=dur, min_periods=dur).mean()
-        df[f'sma_{dur}'] = df.index.map(sma)
+        sma = df['value'][::-1].rolling(dur, min_periods=dur).mean()
+        df[f'sma_{str(dur)}'] = df.index.map(sma)
         return df
         # svals = []
         # for i in range(len(vals)):
