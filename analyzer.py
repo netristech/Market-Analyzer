@@ -299,11 +299,11 @@ def main():
         vals = df['value'][::-1]
         svals = []
         for i in range(len(vals)):
-            if i - dur < 0:
-                r = 0 + i
+            if (i + 1) - dur < 0:
+                r = 0 + (i + 1)
                 s = sum(vals[:r]) / len(vals[:r])
             else:
-                s = sum(vals[i:i-dur]) / dur
+                s = sum(vals[i-dur:i]) / dur
             svals.append(s)
         return df.index.map(svals)
 
