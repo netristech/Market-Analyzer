@@ -272,30 +272,33 @@ def main():
                 })
                 val = (df['high'] + df['low']) / 2
                 df['value'] = df.index.map(val)
-                #df['trend'] = df['value'][::-1].rolling(180).mean()
-                df['trend'] = df.index.map(get_sma(df, 180))
+                trend = df['value'][::-1].rolling(180).mean()
+                df['trend'] = df.index.map(trend)
+                high_wma = df['high'][::-1].rolling(28).apply(get_wma)
+                df['high_wma'] = df.index.map(high_wma)
+                low_wma = df['low'][::-1].rolling(28).apply(get_wma)
+                df['low_wma'] = df.index.map(low_wma)
                 get_macd(df)
                 i.update({f: df.to_json(date_format="iso", orient="split")})
         return data
 
-    def get_wma(vals, dur):
+    def get_wma(vals):
         # Function that returns the Weighted Moving Average
-        wvals = []
-        weights = [i + 1 for i in range(dur)][::-1]
-        for i in range(len(vals)):
-            if i + dur >= len(vals):
-                r = len(vals) - i
-                w = sum([vals[-r:][x] * weights[-r:][x] for x in range(r)]) / sum(weights[-r:])
-            else:
-                w = sum([vals[i:i+dur][x] * weights[x] for x in range(dur)]) / sum(weights)
-            wvals.append(w)
-        return wvals
+        # wvals = []
+        # weights = [i + 1 for i in range(dur)][::-1]
+        # for i in range(len(vals)):
+        #     if i + dur >= len(vals):
+        #         r = len(vals) - i
+        #         w = sum([vals[-r:][x] * weights[-r:][x] for x in range(r)]) / sum(weights[-r:])
+        #     else:
+        #         w = sum([vals[i:i+dur][x] * weights[x] for x in range(dur)]) / sum(weights)
+        #     wvals.append(w)
+        # return wvals
+        weights = [i+1 for i in range(len(vals))]
+        return sum(weights * vals) / sum(weights)
         
-    def get_sma(df, dur):
-        # Calculate and return the simple moving average
-        # sma = df['value'][::-1].rolling(dur, min_periods=dur).mean()
-        # return df.index.map(sma)
-        vals = df['value'][::-1]
+    def get_sma(vals, dur):
+        # Calculate and return the simple moving average from <vals> over <dur> periods
         svals = []
         for i in range(len(vals)):
             if (i + 1) < dur:
