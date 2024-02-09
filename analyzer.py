@@ -49,13 +49,15 @@ def main():
     api_calls = 0 if api_calls is None else int(api_calls) # REMOVE
 
     # Perform cleanup
-    for file in fsops.list_dir(data_dir):
-        if (
-            len(file.split('-')) > 1 and
-            file.split('-')[-1].isnumeric() and
-            (now - timedelta(days=1)) > (datetime.strptime(file.split('-')[-1], "%Y%m%d") +  timedelta(days=1))
-        ):
-            os.remove(f"{data_dir}/{file}")
+    files = fsops.list_dir(data_dir)
+    if files is not None:
+        for file in files:
+            if (
+                len(file.split('-')) > 1 and
+                file.split('-')[-1].isnumeric() and
+                (now - timedelta(days=1)) > (datetime.strptime(file.split('-')[-1], "%Y%m%d") + timedelta(days=1))
+            ):
+                os.remove(f"{data_dir}/{file}")
 
     # Dash code to build sidebar of WebUI
     sidebar = dbc.Col([
