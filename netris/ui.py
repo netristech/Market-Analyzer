@@ -4,9 +4,10 @@ import os
 
 def header(title):
     os.system("clear")
-    print("--------------------------------")
+    line = "".join(["—" for x in range(int(len(title)*1.25))]) if len(title) > 20 else "".join(["—" for x in range(20)])
+    print(line)
     print(title)
-    print("--------------------------------")
+    print(line)
     print("")
 
 def prompts(p, **kwargs):

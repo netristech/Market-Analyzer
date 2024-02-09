@@ -3,6 +3,7 @@
 import os
 import json
 import csv
+import yaml
 from cryptography.fernet import Fernet
 
 # import internal modules
@@ -27,7 +28,8 @@ def create_dir(dir, **kwargs):
 def list_dir(dir):
     # If directory <dir> exists, return the contents of the directory
     if os.path.exists(dir):
-        return os.listdir(dir)
+        file_list = os.listdir(dir)
+        return file_list.sort()
 
 def get_key(key_file):
     # Loads encryption key from <key_file>; generates a new key and writes it to <keyfile> if load fails
@@ -41,6 +43,7 @@ def read_file(file, **kwargs):
     # Returns the contents of <file> as follows:
     # For CSV Files, the contents are returned as a CSV reader object (iterable)
     # For JSON Files, the contents are deserialized and returned as the data type stored in the file
+    # For YAML Files, the contents are deserialized and returned as a dict type
     # For all other files, the contents are returned as str type
     # Accepts optional str keyword argument <type>, and optional encryption key keyword argument <key>
     if not kwargs.get('silent'):
@@ -62,6 +65,13 @@ def read_file(file, **kwargs):
                         content = json.loads(decrypted.decode('utf-8').replace("'", "\""))
                     else:
                         content = json.load(json_file)
+            elif kwargs.get('type') == "yaml":
+                with open(file, read_mode) as yaml_file:
+                    if kwargs.get('key'):
+                        decrypted = kwargs.get('key').decrypt(yaml_file.read())
+                        content = yaml.load(decrypted.decode('utf-8'))
+                    else:
+                        content = yaml.safe_load(yaml_file)
             else:
                 with open(file, read_mode) as other_file:
                     if kwargs.get('key'):
@@ -85,7 +95,8 @@ def read_file(file, **kwargs):
 def write_file(data, file, **kwargs):
     # <data> must be str, list, or dict type, as follows:
     # For CSV files, <data> should be list type (with list type elements / multi-dimensional list).
-    # For JSON files, <data> can be any type, but typically dict or list type.
+    # For JSON files, <data> can be dict or list type
+    # For YAML files, <data> should be dict type
     # For all other files, <data> can be any type, but typically list or str type.
     # Accepts optional str keyword argument <type>, and optional encryption key keyword argument <key>
     if not kwargs.get('silent'):
@@ -112,9 +123,16 @@ def write_file(data, file, **kwargs):
         elif kwargs.get('type') == "json":
             with open(file, write_mode) as json_file:
                 if kwargs.get('key'):
-                    json_file.write(kwargs.get('key').encrypt(str(data).encode('utf-8')))
+                    #json_file.write(kwargs.get('key').encrypt(str(data).encode('utf-8')))
+                    json_file.write(kwargs.get('key').encrypt(json.dumps(data).encode('utf-8')))
                 else:
                     json.dump(data, json_file, indent=2)
+        elif kwargs.get('type') == "yaml":
+            with open(file, write_mode) as yaml_file:
+                if kwargs.get('key'):
+                    yaml_file.write(kwargs.get('key').encrypt(yaml.dump(data).encode('utf-8')))
+                else:
+                    yaml.safe_dump(data, yaml_file)
         else:
             with open(file, write_mode) as other_file:
                 if type(data) is list:
