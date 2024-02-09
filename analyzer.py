@@ -222,7 +222,7 @@ def main():
             view_switch = {
                 1: ['value', 'rgba(0,0,0,0.5)'],
                 2: ['macd signal', 'rgba(208,128,208,0.9) rgba(128,208,248,0.9)'],
-                3: ['trend', 'rgba(0,64,224,0.9)']
+                3: ['trend_wma trend_signal', 'rgba(0,64,224,0.9) rgba(32,208,112,0.9)']
             } 
             for i in data:
                 df = pd.read_json(data.get(i).get('weekly'), orient="split")
@@ -272,41 +272,32 @@ def main():
                 })
                 val = (df['high'] + df['low']) / 2
                 df['value'] = df.index.map(val)
-                trend = df['value'][::-1].rolling(180).mean()
-                df['trend'] = df.index.map(trend)
-                high_wma = df['high'][::-1].rolling(28).apply(get_wma)
-                df['high_wma'] = df.index.map(high_wma)
-                low_wma = df['low'][::-1].rolling(28).apply(get_wma)
-                df['low_wma'] = df.index.map(low_wma)
+                lt_trend = df['value'][::-1].rolling(180).mean()
+                df['lt_trend'] = df.index.map(lt_trend)
+                trend_wma = df['value'][::-1].rolling(28).apply(get_wma)
+                df['trend_wma'] = df.index.map(trend_wma)
+                trend_signal = df['value'][::-1].ewm(span=14, min_periods=14).mean()
+                df['trend_signal'] = df.index.map(trend_signal)
                 get_macd(df)
                 i.update({f: df.to_json(date_format="iso", orient="split")})
         return data
 
     def get_wma(vals):
-        # Function that returns the Weighted Moving Average
-        # wvals = []
-        # weights = [i + 1 for i in range(dur)][::-1]
-        # for i in range(len(vals)):
-        #     if i + dur >= len(vals):
-        #         r = len(vals) - i
-        #         w = sum([vals[-r:][x] * weights[-r:][x] for x in range(r)]) / sum(weights[-r:])
-        #     else:
-        #         w = sum([vals[i:i+dur][x] * weights[x] for x in range(dur)]) / sum(weights)
-        #     wvals.append(w)
-        # return wvals
+        # Calculate and return weighted moving average values for <vals>
         weights = [i+1 for i in range(len(vals))]
         return sum(weights * vals) / sum(weights)
-        
-    def get_sma(vals, dur):
-        # Calculate and return the simple moving average from <vals> over <dur> periods
-        svals = []
-        for i in range(len(vals)):
-            if (i + 1) < dur:
-                s = sum(vals[:i+1]) / len(vals[:i+1])
-            else:
-                s = sum(vals[(i+1)-dur:i+1]) / dur
-            svals.append(s)
-        return svals
+
+    # DEPRICATED    
+    # def get_sma(vals, dur):
+    #     # Calculate and return the simple moving average from <vals> over <dur> periods
+    #     svals = []
+    #     for i in range(len(vals)):
+    #         if (i + 1) < dur:
+    #             s = sum(vals[:i+1]) / len(vals[:i+1])
+    #         else:
+    #             s = sum(vals[(i+1)-dur:i+1]) / dur
+    #         svals.append(s)
+    #     return svals
 
     def get_macd(df, fast=12, slow=26, sig=9):
         fast_ema = df['value'][::-1].ewm(span=fast, min_periods=fast).mean()
@@ -315,7 +306,6 @@ def main():
         signal = macd.ewm(span=sig, min_periods=sig).mean()
         df['macd'] = df.index.map(macd)
         df['signal'] = df.index.map(signal)
-        return df
 
     app.run_server(host='0.0.0.0', port='8080', debug=True)
 
