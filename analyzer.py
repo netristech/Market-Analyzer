@@ -297,10 +297,10 @@ def main():
         delta = df['value'].diff()
         up = delta.clip(lower=0).round(2)
         down = delta.clip(upper=0).abs().round(2)
-        ma_up = up.rolling(dur).mean()
-        ma_down = down.rolling(dur).mean()
+        ma_up = up[::-1].rolling(dur).mean()
+        ma_down = down[::-1].rolling(dur).mean()
         rs = ma_up / ma_down
-        df['rsi'] = 100 - (100 / (1 + rs))
+        df['rsi'] = df.index.map(100 - (100 / (1 + rs)))
 
     # DEPRICATED    
     # def get_sma(vals, dur):
