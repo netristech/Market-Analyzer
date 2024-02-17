@@ -294,11 +294,11 @@ def main():
     
     def get_rsi(df, dur):
         # Calculate and return RSI values from Pandas DataFrame
-        delta = df['value'].diff()
+        delta = df['value'][::-1].diff()
         up = delta.clip(lower=0).round(2)
         down = delta.clip(upper=0).abs().round(2)
-        ma_up = up[::-1].rolling(dur).mean()
-        ma_down = down[::-1].rolling(dur).mean()
+        ma_up = up.rolling(dur).mean()
+        ma_down = down.rolling(dur).mean()
         rs = ma_up / ma_down
         df['rsi'] = df.index.map(100 - (100 / (1 + rs)))
 
