@@ -91,6 +91,7 @@ def main():
                     {"label": "Normal", "value": 1},
                     {"label": "MACD", "value": 2},
                     {"label": "Trend", "value": 3},
+                    {"label": "RSI", "value": 4},
                 ],
                 value=1,
                 className="text-dark",
@@ -224,7 +225,8 @@ def main():
             view_switch = {
                 1: ['value', 'rgba(0,0,0,0.5)'],
                 2: ['macd signal', 'rgba(208,128,208,0.9) rgba(128,208,248,0.9)'],
-                3: ['trend_wma trend_signal', 'rgba(0,64,224,0.9) rgba(32,208,112,0.9)']
+                3: ['trend_wma trend_signal', 'rgba(0,64,224,0.9) rgba(32,208,112,0.9)'],
+                4: ['rsi', 'rgba(0,0,0,0.5)'],
             } 
             for i in data:
                 df = pd.read_json(data.get(i).get('weekly'), orient="split")
@@ -280,14 +282,25 @@ def main():
                 df['trend_wma'] = df.index.map(trend_wma)
                 trend_signal = df['value'][::-1].ewm(span=14, min_periods=14).mean()
                 df['trend_signal'] = df.index.map(trend_signal)
+                get_rsi(df, 14)
                 get_macd(df)
-                i.update({f: df.to_json(date_format="iso", orient="split")})
+                i.update({f: df.to_json(date_format="iso", orient="split")})    
         return data
 
     def get_wma(vals):
         # Calculate and return weighted moving average values for <vals>
         weights = [i+1 for i in range(len(vals))]
         return sum(weights * vals) / sum(weights)
+    
+    def get_rsi(df, dur):
+        # Calculate and return RSI values from Pandas DataFrame
+        delta = df['values'].diff()
+        up = delta.clip(lower=0).round(2)
+        down = delta.clip(upper=0).abs().round(2)
+        ma_up = up.rolling(dur).mean()
+        ma_down = down.rolling(dur).mean()
+        rs = ma_up / ma_down
+        df['rsi'] = 100 - (100 / (1 + rs))
 
     # DEPRICATED    
     # def get_sma(vals, dur):
