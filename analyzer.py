@@ -92,6 +92,7 @@ def main():
                     {"label": "MACD", "value": 2},
                     {"label": "Trend", "value": 3},
                     {"label": "RSI", "value": 4},
+                    {"label": "OBV", "value": 5},
                 ],
                 value=1,
                 className="text-dark",
@@ -167,7 +168,7 @@ def main():
                 if data.get(ticker):
                     continue
                 # Validate ticker symbol characters and length
-                elif not re.search('^[A-Z^]{1}[A-Z-=]{0,7}(?<=[A-Z])$', ticker):
+                elif not re.search(r'^[A-Z^]{1}[A-Z-=]{0,7}(?<=[A-Z])$', ticker):
                     return json.dumps({"error": f"Invalid characters or length in ticker: {ticker}"})
                 else:
                     #dresp = requests.get(f"https://www.alphavantage.co/query?function={daily_func}&symbol={ticker}&outputsize=full&apikey=9LVE9OGAKH31RPWM&datatype=json")
@@ -227,6 +228,7 @@ def main():
                 2: ['macd signal', 'rgba(208,128,208,0.9) rgba(128,208,248,0.9)'],
                 3: ['trend_wma trend_signal', 'rgba(0,64,224,0.9) rgba(32,208,112,0.9)'],
                 4: ['rsi', 'rgba(0,0,0,0.5)'],
+                5: ['obv', 'rgba(0,0,0,0.5)'],
             } 
             for i in data:
                 df = pd.read_json(data.get(i).get('weekly'), orient="split")
@@ -258,12 +260,13 @@ def main():
 
     def format_data(data):
         # Calculate graphing data, format, and return as Pandas DataFram object
-        h_key, l_key, close_key, adj_close_key = "2. high", "3. low", "4. close", "5. adjusted close"
+        h_key, l_key, close_key, adj_close_key, vol_key = "2. high", "3. low", "4. close", "5. adjusted close", "6. volume"
         for i in data.values():
             for f,j in i.items():
-                dates, high, low = ([] for i in range(3))
+                dates, high, low, vol = ([] for i in range(4))
                 for d,v in j.items():
                     dates.append(d)
+                    vol.append(v.get(vol_key))
                     adj = 1
                     if v.get(adj_close_key) and v.get(adj_close_key) != v.get(close_key):
                         adj = float(v.get(adj_close_key)) / float(v.get(close_key))
@@ -273,6 +276,7 @@ def main():
                     "date": dates,
                     "high": high,
                     "low": low,
+                    "volume": vol,
                 })
                 val = (df['high'] + df['low']) / 2
                 df['value'] = df.index.map(val)
@@ -282,8 +286,9 @@ def main():
                 df['trend_wma'] = df.index.map(trend_wma)
                 trend_signal = df['value'][::-1].ewm(span=14, min_periods=14).mean()
                 df['trend_signal'] = df.index.map(trend_signal)
-                get_rsi(df, 14)
                 get_macd(df)
+                get_rsi(df, 14)
+                get_obv(df)
                 i.update({f: df.to_json(date_format="iso", orient="split")})    
         return data
 
@@ -301,6 +306,13 @@ def main():
         ma_down = down.rolling(dur).mean()
         rs = ma_up / ma_down
         df['rsi'] = df.index.map(100 - (100 / (1 + rs)))
+
+    def get_obv(df):
+        # Calculate and return On-balance Volume from Pandas DataFrame
+        delta = df['value'][::-1].diff()
+        adj = delta.clip(lower=0.01, upper=-0.01).round(2) * 100
+        obv = df['volume'] * adj
+        df['obv'] = df.index.map(obv.cumsum())
 
     # DEPRICATED    
     # def get_sma(vals, dur):
