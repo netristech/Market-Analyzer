@@ -310,8 +310,8 @@ def main():
     def get_obv(df):
         # Calculate and return On-balance Volume from Pandas DataFrame
         delta = df['value'][::-1].diff()
-        adj = delta.clip(lower=0.01, upper=-0.01).round(2) * 100.0
-        obv = df['volume'] * adj
+        adj = delta.clip(lower=0.01, upper=-0.01).round(2) * 100
+        obv = df['volume'] * adj.astype(int)
         df['obv'] = df.index.map(obv.cumsum())
 
     # DEPRICATED    
