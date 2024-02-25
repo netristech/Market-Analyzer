@@ -272,7 +272,7 @@ def main():
                         adj = float(v.get(adj_close_key)) / float(v.get(close_key))
                     high.append(float(v.get(h_key)) * adj)
                     low.append(float(v.get(l_key)) * adj)
-                    vol.append(int(v.get(vol_key)) * adj)
+                    vol.append(int(v.get(vol_key)) / adj)
                 df = pd.DataFrame({
                     "date": dates,
                     "high": high,
