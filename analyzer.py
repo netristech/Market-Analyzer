@@ -266,12 +266,13 @@ def main():
                 dates, high, low, vol = ([] for i in range(4))
                 for d,v in j.items():
                     dates.append(d)
-                    vol.append(v.get(vol_key))
+                    #vol.append(v.get(vol_key))
                     adj = 1
                     if v.get(adj_close_key) and v.get(adj_close_key) != v.get(close_key):
                         adj = float(v.get(adj_close_key)) / float(v.get(close_key))
                     high.append(float(v.get(h_key)) * adj)
                     low.append(float(v.get(l_key)) * adj)
+                    vol.append(int(v.get(vol_key)) * adj)
                 df = pd.DataFrame({
                     "date": dates,
                     "high": high,
