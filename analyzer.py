@@ -246,10 +246,10 @@ def main():
                         fig.add_scatter(x=df['date'], y=df[params[0].split()[j+1]], mode='lines', line_color=params[1].split()[j+1], line_shape='spline', name=params[0].split()[j-1])
                 fig.update_xaxes(range=[term_switch.get(scale)[0], now])
                 fig.update_yaxes(range=[minval, maxval])
-                # graphs.append(dbc.Row([
-                #     dcc.Graph(figure=fig, config={'displayModeBar': False}),
-                #     dbc.Table.from_dataframe(df, striped=True, bordered=True, color="dark")
-                # ]))
+                graphs.append(dbc.Row([
+                    dcc.Graph(figure=fig, config={'displayModeBar': False}),
+                    #dbc.Table.from_dataframe(df, striped=True, bordered=True, color="dark")
+                ]))
             return [i for i in graphs]
 
     # Debugging output - REMOVE LATER!
