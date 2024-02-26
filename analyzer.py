@@ -268,6 +268,7 @@ def main():
             for f,j in i.items():
                 dates, high, low, vol = ([] for i in range(4))
                 for d,v in j.items():
+                    print(v)
                     dates.append(d)
                     #vol.append(v.get(vol_key))
                     adj = 1
