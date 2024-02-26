@@ -189,7 +189,7 @@ def main():
                             }
                         })
                         changed = True
-                        #fsops.write_file(str(api_calls + 1), f"{data_dir}/api-calls-{timestamp}", silent=True)
+                        fsops.write_file(str(api_calls + 1), f"{data_dir}/api-calls-{timestamp}", silent=True)
             if changed:
                 file_data.update(data)
                 fsops.write_file(file_data, f"{data_dir}/data-{timestamp}.json", type="json", silent=True)
