@@ -265,10 +265,10 @@ def main():
         # Calculate graphing data, format, and return as Pandas DataFram object
         h_key, l_key, close_key, adj_close_key, vol_key = "2. high", "3. low", "4. close", "5. adjusted close", "6. volume"
         for i in data.values():
+            print(i)
             for f,j in i.items():
                 dates, high, low, vol = ([] for i in range(4))
                 for d,v in j.items():
-                    print(v)
                     dates.append(d)
                     #vol.append(v.get(vol_key))
                     adj = 1
