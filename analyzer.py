@@ -154,18 +154,20 @@ def main():
     def get_data(n_clicks, tickers):
         # Set time series data to get from API
         if len(tickers) > 1:
+            data = {}
             # daily_func = "TIME_SERIES_DAILY"
             # daily_key = "Time Series (Daily)"
             weekly_func = "TIME_SERIES_WEEKLY_ADJUSTED"
             weekly_key = "Weekly Adjusted Time Series"
-            data = fsops.read_file(f"{data_dir}/data-{timestamp}.json", type="json", silent=True)
-            if data is None:
-                data = {}
+            file_data = fsops.read_file(f"{data_dir}/data-{timestamp}.json", type="json", silent=True)
+            if file_data is None:
+                file_data = {}
             changed = False
             for ticker in tickers.replace(',', ' ').split():
                 ticker = ticker.upper()
                 # Check if data is already present
-                if data.get(ticker):
+                if file_data.get(ticker):
+                    data.update(file_data.get(ticker))
                     continue
                 # Validate ticker symbol characters and length
                 elif not re.search(r'^[A-Z^]{1}[A-Z-=]{0,7}(?<=[A-Z])$', ticker):
@@ -187,9 +189,10 @@ def main():
                             }
                         })
                         changed = True
-                        fsops.write_file(str(api_calls + 1), f"{data_dir}/api-calls-{timestamp}", silent=True)
+                        #fsops.write_file(str(api_calls + 1), f"{data_dir}/api-calls-{timestamp}", silent=True)
             if changed:
-                fsops.write_file(data, f"{data_dir}/data-{timestamp}.json", type="json", silent=True)
+                file_data.update(data)
+                fsops.write_file(file_data, f"{data_dir}/data-{timestamp}.json", type="json", silent=True)
             return json.dumps(format_data(data))
     
     # Check for errors in data store and display bootstrap alert with error message
@@ -216,7 +219,7 @@ def main():
     def draw_graphs(data, scale, view):
         if data is not None and len(data) > 0:
             data = json.loads(data)
-            graphs = []        
+            graphs = []
             term_switch = {
                 1: [one_year, 52],
                 2: [two_year, 104],
@@ -243,10 +246,10 @@ def main():
                         fig.add_scatter(x=df['date'], y=df[params[0].split()[j+1]], mode='lines', line_color=params[1].split()[j+1], line_shape='spline', name=params[0].split()[j-1])
                 fig.update_xaxes(range=[term_switch.get(scale)[0], now])
                 fig.update_yaxes(range=[minval, maxval])
-                graphs.append(dbc.Row([
-                    dcc.Graph(figure=fig, config={'displayModeBar': False}),
-                    dbc.Table.from_dataframe(df, striped=True, bordered=True, color="dark")
-                ]))
+                # graphs.append(dbc.Row([
+                #     dcc.Graph(figure=fig, config={'displayModeBar': False}),
+                #     dbc.Table.from_dataframe(df, striped=True, bordered=True, color="dark")
+                # ]))
             return [i for i in graphs]
 
     # Debugging output - REMOVE LATER!
