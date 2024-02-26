@@ -288,7 +288,7 @@ def main():
                 trend_signal = df['value'][::-1].ewm(span=14, min_periods=14).mean()
                 df['trend_signal'] = df.index.map(trend_signal)
                 get_macd(df)
-                get_rsi(df, 14)
+                get_rsi(df)
                 get_obv(df)
                 i.update({f: df.to_json(date_format="iso", orient="split")})    
         return data
@@ -298,7 +298,7 @@ def main():
         weights = [i+1 for i in range(len(vals))]
         return sum(weights * vals) / sum(weights)
     
-    def get_rsi(df, dur):
+    def get_rsi(df, dur=14):
         # Calculate and return RSI values from Pandas DataFrame
         delta = df['value'][::-1].diff()
         up = delta.clip(lower=0).round(2)
@@ -306,7 +306,8 @@ def main():
         ma_up = up.rolling(dur).mean()
         ma_down = down.rolling(dur).mean()
         rs = ma_up / ma_down
-        df['rsi'] = df.index.map(100 - (100 / (1 + rs)))
+        rsi = 100 - (100 / (1 + rs ))
+        df['rsi'] = df.index.map(rsi)
 
     def get_obv(df):
         # Calculate and return On-balance Volume from Pandas DataFrame
