@@ -167,7 +167,7 @@ def main():
                 ticker = ticker.upper()
                 # Check if data is already present
                 if file_data.get(ticker):
-                    data.update(file_data.get(ticker))
+                    data.update({ ticker: file_data.get(ticker) })
                     continue
                 # Validate ticker symbol characters and length
                 elif not re.search(r'^[A-Z^]{1}[A-Z-=]{0,7}(?<=[A-Z])$', ticker):
