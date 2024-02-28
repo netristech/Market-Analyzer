@@ -93,6 +93,7 @@ def main():
                     {"label": "Trend", "value": 3},
                     {"label": "RSI", "value": 4},
                     {"label": "OBV", "value": 5},
+                    {"label": "OBV Trend", "value": 6},
                 ],
                 value=1,
                 className="text-dark",
@@ -232,6 +233,7 @@ def main():
                 3: ['trend_wma trend_signal', 'rgba(0,64,224,0.9) rgba(32,208,112,0.9)'],
                 4: ['rsi', 'rgba(0,0,0,0.5)'],
                 5: ['obv', 'rgba(0,0,0,0.5)'],
+                6: ['obv_trend', 'rgba(0,64,224,0.9)'],
             } 
             for i in data:
                 df = pd.read_json(data.get(i).get('weekly'), orient="split")
@@ -294,6 +296,8 @@ def main():
                 get_macd(df)
                 get_rsi(df)
                 get_obv(df)
+                obv_trend = df['obv'][::-1].rolling(28).apply(get_wma)
+                df['obv_trend'] = df.index.map(obv_trend)
                 i.update({f: df.to_json(date_format="iso", orient="split")})    
         return data
 
