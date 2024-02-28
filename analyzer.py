@@ -228,7 +228,7 @@ def main():
                 4: [ten_year, 521],
             }
             view_switch = {
-                1: ['value', 'rgba(0,0,0,0.5)'],
+                1: ['value buy_signal', 'rgba(0,0,0,0.5) rgba(32,208,112,0.9)'],
                 2: ['macd signal', 'rgba(208,128,208,0.9) rgba(128,208,248,0.9)'],
                 3: ['trend_wma trend_signal', 'rgba(0,64,224,0.9) rgba(32,208,112,0.9)'],
                 4: ['rsi', 'rgba(0,0,0,0.5)'],
@@ -298,6 +298,7 @@ def main():
                 df['obv_trend'] = df.index.map(obv_trend)
                 obv_signal = df['obv'][::-1].ewm(span=14, min_periods=14).mean()
                 df['obv_signal'] = df.index.map(obv_signal)
+                get_buy_sig(df)
                 i.update({f: df.to_json(date_format="iso", orient="split")})
         return data
 
@@ -331,6 +332,21 @@ def main():
         signal = macd.ewm(span=sig, min_periods=sig).mean()
         df['macd'] = df.index.map(macd)
         df['signal'] = df.index.map(signal)
+
+    def get_buy_sig(df):
+        buy_sig = []
+        for i, row in df.iterrows():
+            if (
+                row['macd'] <= 0 or row['signal'] <= 0 and
+                row['macd'] < row['signal'] and
+                round(abs(row['macd'] / row['signal']),2) in [float(i/100) for i in range(85, 116)] and
+                row['trend_signal'] < row['trend_wma'] and
+                row['rsi'] < 50
+            ):
+                buy_sig.append(1)
+            else:
+                buy_sig.append(-1)
+        df['buy_signal'] = buy_sig  
 
     app.run_server(host='0.0.0.0', port='8080', debug=True)
 
