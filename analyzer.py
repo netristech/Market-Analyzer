@@ -343,7 +343,7 @@ def main():
                 row['trend_signal'] < row['trend_wma'] and
                 row['rsi'] < 50
             ):
-                buy_sig.append(df['value'])
+                buy_sig.append(row['value'])
             else:
                 buy_sig.append(-1)
         df['buy_signal'] = buy_sig  
