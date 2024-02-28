@@ -233,7 +233,7 @@ def main():
                 3: ['trend_wma trend_signal', 'rgba(0,64,224,0.9) rgba(32,208,112,0.9)'],
                 4: ['rsi', 'rgba(0,0,0,0.5)'],
                 5: ['obv', 'rgba(0,0,0,0.5)'],
-                6: ['obv_trend', 'rgba(0,64,224,0.9)'],
+                6: ['obv_trend obv_signal', 'rgba(0,64,224,0.9) rgba(32,208,112,0.9)'],
             } 
             for i in data:
                 df = pd.read_json(data.get(i).get('weekly'), orient="split")
@@ -267,12 +267,10 @@ def main():
         # Calculate graphing data, format, and return as Pandas DataFram object
         h_key, l_key, close_key, adj_close_key, vol_key = "2. high", "3. low", "4. close", "5. adjusted close", "6. volume"
         for i in data.values():
-            print(i)
             for f,j in i.items():
                 dates, high, low, vol = ([] for i in range(4))
                 for d,v in j.items():
                     dates.append(d)
-                    #vol.append(v.get(vol_key))
                     adj = 1
                     if v.get(adj_close_key) and v.get(adj_close_key) != v.get(close_key):
                         adj = float(v.get(adj_close_key)) / float(v.get(close_key))
@@ -298,7 +296,9 @@ def main():
                 get_obv(df)
                 obv_trend = df['obv'][::-1].rolling(28).apply(get_wma)
                 df['obv_trend'] = df.index.map(obv_trend)
-                i.update({f: df.to_json(date_format="iso", orient="split")})    
+                obv_signal = df['obv'][::-1].ewm(span=14, min_periods=14).mean()
+                df['obv_signal'] = df.index.map(obv_signal)
+                i.update({f: df.to_json(date_format="iso", orient="split")})
         return data
 
     def get_wma(vals):
@@ -323,18 +323,6 @@ def main():
         adj = delta.clip(lower=0.01, upper=-0.01).round(2) * 100
         obv = df['volume'][::-1].astype(int) * adj
         df['obv'] = df.index.map(obv.cumsum())
-
-    # DEPRICATED    
-    # def get_sma(vals, dur):
-    #     # Calculate and return the simple moving average from <vals> over <dur> periods
-    #     svals = []
-    #     for i in range(len(vals)):
-    #         if (i + 1) < dur:
-    #             s = sum(vals[:i+1]) / len(vals[:i+1])
-    #         else:
-    #             s = sum(vals[(i+1)-dur:i+1]) / dur
-    #         svals.append(s)
-    #     return svals
 
     def get_macd(df, fast=12, slow=26, sig=9):
         fast_ema = df['value'][::-1].ewm(span=fast, min_periods=fast).mean()
