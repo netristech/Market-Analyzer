@@ -46,17 +46,15 @@ def main():
     five_day = now - timedelta(days=5)
     data_dir = f"{os.getcwd()}/data"
     fsops.create_dir(data_dir)
-    api_calls = f"{data_dir}/api-calls-{timestamp}" # REMOVE
-    api_calls = 0 if not api_calls is None else int(api_calls) # REMOVE
 
     # Perform cleanup
     files = fsops.list_dir(data_dir)
-    if files is not None:
+    if files and len(files) > 1:
         for file in files:
             if (
                 len(file.split('-')) > 1 and
-                file.split('-')[-1].isnumeric() and
-                (now - timedelta(days=1)) > (datetime.strptime(file.split('-')[-1], "%Y%m%d") + timedelta(days=1))
+                file.split('-')[-1].isnumeric and
+                now - timedelta(days=1) > datetime.strptime(file.split('-')[-1], '%Y%m%d')
             ):
                 os.remove(f"{data_dir}/{file}")
 
@@ -191,7 +189,6 @@ def main():
                             }
                         })
                         changed = True
-                        fsops.write_file(str(api_calls + 1), f"{data_dir}/api-calls-{timestamp}")
             if changed:
                 file_data.update(data)
                 fsops.write_file(file_data, f"{data_dir}/data-{timestamp}.json", type="json")
