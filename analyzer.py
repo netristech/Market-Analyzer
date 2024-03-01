@@ -161,7 +161,7 @@ def main():
             weekly_func = "TIME_SERIES_WEEKLY_ADJUSTED"
             weekly_key = "Weekly Adjusted Time Series"
             file_data = fsops.read_file(f"{data_dir}/data-{timestamp}.json", type="json")
-            if not file_data:
+            if type(file_data) is not dict:
                 file_data = {}
             changed = False
             for ticker in tickers.replace(',', ' ').split():
