@@ -1,14 +1,33 @@
 # Module for CLI UI elements
 # Import third-party modules
 import os
+import sys
 
-def header(title):
+def inline_print(output):
+    sys.stdout.write(output)
+    sys.stdout.flush()
+
+def wrap(msg, max_len):
+    line = ""
+    wrapped = ""
+    for word in msg.split():
+        if len(line + word) > max_len:
+            wrapped += f"{line}\n"
+            line = f"{word} "
+        else:
+            line += f"{word} "
+    if len(line) > 0:
+        wrapped += line
+    return wrapped
+
+def header(title, **kwargs):
+    line = kwargs.get('line') if kwargs.get('line') else "".join(["—" for x in range(50)])
     os.system("clear")
-    line = "".join(["—" for x in range(int(len(title)*1.25))]) if len(title) > 20 else "".join(["—" for x in range(20)])
-    print(line)
-    print(title)
-    print(line)
-    print("")
+    return "\n".join([line, title, line, ""])
+    # print(line)
+    # print(wrap(title, wrap_len))
+    # print(line)
+    # print("")
 
 def prompts(p, **kwargs):
     message = kwargs.get('message') if kwargs.get('message') else ""
