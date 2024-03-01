@@ -17,9 +17,10 @@ def create_dir(dir):
         try:
             os.makedirs(dir)
         except:
-            return False
+            pass
         else:
             return True
+    return False
 
 def list_dir(dir):
     # If directory <dir> exists, return the contents of the directory as list type
