@@ -44,9 +44,10 @@ def main():
     two_week = now - timedelta(days=14)
     one_week = now - timedelta(days=7)
     five_day = now - timedelta(days=5)
-    data_dir = fsops.create_dir(f"{os.getcwd()}/data")
-    api_calls = fsops.read_file(f"{data_dir}/api-calls-{timestamp}") # REMOVE
-    api_calls = 0 if api_calls is None else int(api_calls) # REMOVE
+    data_dir = f"{os.getcwd()}/data"
+    fsops.create_dir(data_dir)
+    api_calls = f"{data_dir}/api-calls-{timestamp}" # REMOVE
+    api_calls = 0 if not api_calls is None else int(api_calls) # REMOVE
 
     # Perform cleanup
     files = fsops.list_dir(data_dir)
