@@ -51,10 +51,11 @@ def main():
     files = fsops.list_dir(data_dir)
     if files and len(files) > 1:
         for file in files:
+            fn = "".join(file.split('.')[:-1]) if len(file.split('.')) > 1 else file
             if (
-                len(file.split('-')) > 1 and
-                file.split('-')[-1].rstrip(f".{file.split('.')[-1]}").isnumeric and
-                now - timedelta(days=1) > datetime.strptime(file.split('-')[-1].rstrip(f".{file.split('.')[-1]}"), '%Y%m%d')
+                len(fn.split('-')) > 1 and
+                fn.split('-')[-1].isnumeric and
+                now - timedelta(days=1) > datetime.strptime(fn.split('-')[-1], '%Y%m%d')
             ):
                 os.remove(f"{data_dir}/{file}")
 
