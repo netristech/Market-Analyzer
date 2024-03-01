@@ -44,8 +44,8 @@ def main():
     two_week = now - timedelta(days=14)
     one_week = now - timedelta(days=7)
     five_day = now - timedelta(days=5)
-    data_dir = fsops.create_dir(f"{os.getcwd()}/data", silent=True)
-    api_calls = fsops.read_file(f"{data_dir}/api-calls-{timestamp}", silent=True) # REMOVE
+    data_dir = fsops.create_dir(f"{os.getcwd()}/data")
+    api_calls = fsops.read_file(f"{data_dir}/api-calls-{timestamp}") # REMOVE
     api_calls = 0 if api_calls is None else int(api_calls) # REMOVE
 
     # Perform cleanup
@@ -160,7 +160,7 @@ def main():
             # daily_key = "Time Series (Daily)"
             weekly_func = "TIME_SERIES_WEEKLY_ADJUSTED"
             weekly_key = "Weekly Adjusted Time Series"
-            file_data = fsops.read_file(f"{data_dir}/data-{timestamp}.json", type="json", silent=True)
+            file_data = fsops.read_file(f"{data_dir}/data-{timestamp}.json", type="json")
             if file_data is None:
                 file_data = {}
             changed = False
@@ -190,10 +190,10 @@ def main():
                             }
                         })
                         changed = True
-                        fsops.write_file(str(api_calls + 1), f"{data_dir}/api-calls-{timestamp}", silent=True)
+                        fsops.write_file(str(api_calls + 1), f"{data_dir}/api-calls-{timestamp}")
             if changed:
                 file_data.update(data)
-                fsops.write_file(file_data, f"{data_dir}/data-{timestamp}.json", type="json", silent=True)
+                fsops.write_file(file_data, f"{data_dir}/data-{timestamp}.json", type="json")
             return json.dumps(format_data(data))
     
     # Check for errors in data store and display bootstrap alert with error message
