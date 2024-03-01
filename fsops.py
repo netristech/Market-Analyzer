@@ -6,33 +6,32 @@ import csv
 import yaml
 from cryptography.fernet import Fernet
 
-# import internal modules
-from netris.printing import inline_print
-import netris.ui as ui
+class NoAliasDumper(yaml.SafeDumper):
+    def ignore_aliases(self, data):
+        return True
 
-def create_dir(dir, **kwargs):
+def create_dir(dir):
     # Create the directory <dir> if it does not already exist
+    # Returns True when successful
     if not os.path.exists(dir):
-        if not kwargs.get('silent'):
-            inline_print(f"Creating {dir} directory... ")
         try:
             os.makedirs(dir)
         except:
-            if not kwargs.get('silent'):
-                print("[FAILED]")
+            return False
         else:
-            if not kwargs.get('silent'):
-                print("[OK]")
-    return dir
+            return True
 
 def list_dir(dir):
-    # If directory <dir> exists, return the contents of the directory
+    # If directory <dir> exists, return the contents of the directory as list type
     if os.path.exists(dir):
         file_list = os.listdir(dir)
-        return file_list.sort()
+        file_list.sort()
+        return file_list
 
 def get_key(key_file):
-    # Loads encryption key from <key_file>; generates a new key and writes it to <keyfile> if load fails
+    # Attempts to load encryption key from <key_file>;
+    # If <key_file> fails to load, a new key is generated and saved
+    # Returns a Fernet encryption key object
     key = read_file(key_file, type="key")
     if key is None:
         key = Fernet.generate_key()
@@ -41,13 +40,12 @@ def get_key(key_file):
 
 def read_file(file, **kwargs):
     # Returns the contents of <file> as follows:
-    # For CSV Files, the contents are returned as a CSV reader object (iterable)
+    # For CSV Files, the contents are returned as multi-dimensional list (list type with list type elements)
     # For JSON Files, the contents are deserialized and returned as the data type stored in the file
     # For YAML Files, the contents are deserialized and returned as a dict type
     # For all other files, the contents are returned as str type
     # Accepts optional str keyword argument <type>, and optional encryption key keyword argument <key>
-    if not kwargs.get('silent'):
-        inline_print(f"Loading file {file}... ")
+    # Returns file contents as either str, list, or dict type when success
     try:
         if os.path.exists(file):
             read_mode = "rb" if kwargs.get('type') == "key" or kwargs.get('key') else "r"
@@ -55,9 +53,9 @@ def read_file(file, **kwargs):
                 with open(file, read_mode, newline="") as csv_file:
                     if kwargs.get('key'):
                         decrypted = kwargs.get('key').decrypt(csv_file.read())
-                        content = csv.reader(decrypted.decode('utf-8').splitlines(), delimiter='', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+                        content = list(csv.reader(decrypted.decode('utf-8').splitlines(), delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL))
                     else:
-                        content = csv.reader(csv_file, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+                        content = list(csv.reader(csv_file, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL))
             elif kwargs.get('type') == "json":
                 with open(file, read_mode) as json_file:
                     if kwargs.get('key'):
@@ -69,7 +67,7 @@ def read_file(file, **kwargs):
                 with open(file, read_mode) as yaml_file:
                     if kwargs.get('key'):
                         decrypted = kwargs.get('key').decrypt(yaml_file.read())
-                        content = yaml.load(decrypted.decode('utf-8'))
+                        content = yaml.safe_load(decrypted.decode('utf-8'))
                     else:
                         content = yaml.safe_load(yaml_file)
             else:
@@ -80,42 +78,28 @@ def read_file(file, **kwargs):
                     else:
                         content = other_file.read()
             if len(content) < 1: 
-                raise Exception(f"{file}: File is empty")
+                raise Exception(f"{file} is empty")
         else:
-            raise Exception(f"{file}: does not exist")
-    except Exception as e:
-        if not kwargs.get('silent'):
-            print("[FAILED]")
-            print(f"Reason: {e}")
+            raise Exception(f"{file} does not exist")
+    except Exception as e:      
+        return e
     else:
-        if not kwargs.get('silent'):
-            print("[OK]")
         return content
     
 def write_file(data, file, **kwargs):
-    # <data> must be str, list, or dict type, as follows:
-    # For CSV files, <data> should be list type (with list type elements / multi-dimensional list).
+    # <data> should be str, list, or dict type, depending on file type as follows:
+    # For CSV files, <data> should be multi-dimensional list type (list type with list type elements).
     # For JSON files, <data> can be dict or list type
     # For YAML files, <data> should be dict type
     # For all other files, <data> can be any type, but typically list or str type.
     # Accepts optional str keyword argument <type>, and optional encryption key keyword argument <key>
-    if not kwargs.get('silent'):
-        inline_print(f"Writing data to {file}... ")
+    # Returns True when successful
     try:
         write_mode = "wb" if kwargs.get('type') == "key" or kwargs.get('key') else "w"
         if kwargs.get('type') == "csv":
-            with open(file, write_mode) as csv_file:
+            with open(file, write_mode, newline="") as csv_file:
                 if kwargs.get('key'):
-                    encrypted = ""
-                    for row in data:
-                        for item in row:
-                            if item == row[-1]:
-                                if row == data[-1]:
-                                    encrypted += f"{item}"
-                                else:
-                                    encrypted += f"{item}\n"
-                            else:
-                                encrypted += f"{item},"
+                    encrypted = "\n".join([",".join(x) for x in data])
                     csv_file.write(kwargs.get('key').encrypt(encrypted.encode('utf-8')))
                 else:
                     writer = csv.writer(csv_file, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
@@ -130,9 +114,9 @@ def write_file(data, file, **kwargs):
         elif kwargs.get('type') == "yaml":
             with open(file, write_mode) as yaml_file:
                 if kwargs.get('key'):
-                    yaml_file.write(kwargs.get('key').encrypt(yaml.dump(data).encode('utf-8')))
+                    yaml_file.write(kwargs.get('key').encrypt(yaml.dump(data, Dumper=NoAliasDumper).encode('utf-8')))
                 else:
-                    yaml.safe_dump(data, yaml_file)
+                    yaml.dump(data, yaml_file, Dumper=NoAliasDumper)
         else:
             with open(file, write_mode) as other_file:
                 if type(data) is list:
@@ -146,24 +130,15 @@ def write_file(data, file, **kwargs):
                     else:
                         other_file.write(data)
     except:
-        if not kwargs.get('silent'):
-            print("[FAILED]")
+        return False
     else:
-        if not kwargs.get('silent'):
-            print("[OK]")
+        return True    
 
-def remove_file(file, **kwargs):
+def remove_file(file):
     # <file> should be the full path to a file as a str type
-    if not kwargs.get('silent'):
-        if input(ui.prompts("delete", message=file)) not in ui.responses("yes"):
-            return
-    else:
-        inline_print(f"Deleting {file}... ")
     try:
         os.remove(file)
     except:
-        if not kwargs.get('silent'):
-            print("[FAILED]")
+        return False
     else:
-        if not kwargs.get('silent'):
-            print("[OK]")
+        return True

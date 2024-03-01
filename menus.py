@@ -1,10 +1,6 @@
 # module and class for handling terminal menus
-# import third-party modules
-import os
-import sys
 
 # Import internal Modules
-from netris import fsops
 import netris.ui as ui
 
 class Menu:
@@ -23,24 +19,24 @@ class Menu:
             items =  [{ "name": "No items found...", "action": None }]
         main = True if self.active == self.menu.get('main') else False
         split = True if len(items) > 9 else False
+        output = ""
         for i in range(0, len(items), 9):
             last = True if split and i + 9 >= len(items) else False
-            ui.header(self.active.get('title'))
+            #output += ui.header(self.active.get('title'))
             for j in range(len(items[i:i+9])):
                 if empty:
-                    print(f"{items[i+j].get('name')}")
+                    output += f"{items[i+j].get('name')}\n"
                 else:
-                    print(f"{str(j + 1)}: {items[i+j].get('name')}")
+                    output += f"{str(j + 1)}: {items[i+j].get('name')}\n"
             if split and not last:
-                print("m: More items.. ")
+                output += "m: More items...\n"
             if not main:
-                print(f"r: Return to {self.menu.get(self.active.get('parent')).get('title')}")
-            print("x: Exit")
-            print("")
+                output += f"r: Return to {self.menu.get(self.active.get('parent')).get('title')}\n"
+            output += "x: Exit\n\n"
             selection = input("Enter selection: ")
             try:
                 if selection in ui.responses("exit"):
-                    return "exit"
+                    return {"output": output, "action": "exit"}
                 elif not main and selection in ui.responses("return"):
                     self.active = self.menu.get(self.active.get('parent'))
                     break
@@ -52,7 +48,7 @@ class Menu:
                         self.active = self.menu.get(action)
                         break
                     else:
-                        return action
+                        return {"output": output, "action": action}
             except:
                 break
     
