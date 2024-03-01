@@ -53,8 +53,8 @@ def main():
         for file in files:
             if (
                 len(file.split('-')) > 1 and
-                file.split('-')[-1].isnumeric and
-                now - timedelta(days=1) > datetime.strptime(file.split('-')[-1], '%Y%m%d')
+                file.split('-')[-1].rstrip(f".{file.split('.')[-1]}").isnumeric and
+                now - timedelta(days=1) > datetime.strptime(file.split('-')[-1].rstrip(f".{file.split('.')[-1]}"), '%Y%m%d')
             ):
                 os.remove(f"{data_dir}/{file}")
 
