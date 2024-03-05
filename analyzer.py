@@ -337,9 +337,9 @@ def main():
         for i, row in df.iterrows():
             if (
                 (row['macd'] <= 0 or row['signal'] <= 0) and
-                row['macd'] < row['signal'] and
+                all(row['macd'].head(5).where(row['macd'] < row['signal'], 0)) and
                 round(abs(row['macd'] / row['signal']),2) in [float(i/100) for i in range(85, 116)] and
-                row['trend_signal'] < row['trend_wma'] and
+                #row['trend_signal'] < row['trend_wma'] and
                 row['rsi'] < 50
             ):
                 buy_sig.append(row['value'])
