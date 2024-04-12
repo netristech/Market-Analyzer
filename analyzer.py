@@ -337,7 +337,7 @@ def main():
         for i, row in df.iterrows():
             if (
                 round(abs(row['macd'] / row['signal']),2) in [float(x/100) for x in range(85, 115)] and
-                sum(row['macd'][i-9:i]) / 9 <= 0 and
+                sum(df['macd'][i-9:i]) / 9 <= 0 and
                 row['rsi'] < 50
             ):
                 buy_sig.append(row['value'])
