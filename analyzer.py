@@ -228,7 +228,7 @@ def main():
             }
             view_switch = {
                 1: ['value buy_signal', 'rgba(0,0,0,0.5) rgba(32,208,112,0.9)'],
-                2: ['macd signal macd_median', 'rgba(208,128,208,0.9) rgba(128,208,248,0.9) rgba(96,224,128,0.9)'],
+                2: ['macd signal mean_macd', 'rgba(208,128,208,0.9) rgba(128,208,248,0.9) rgba(96,224,128,0.9)'],
                 3: ['trend_wma trend_signal', 'rgba(0,64,224,0.9) rgba(32,208,112,0.9)'],
                 4: ['rsi mean_rsi', 'rgba(0,0,0,0.5) rgba(96,24,128,0.9)'],
                 5: ['obv', 'rgba(0,0,0,0.5)'],
@@ -291,7 +291,6 @@ def main():
                 trend_signal = df['value'][::-1].ewm(span=14, min_periods=14).mean()
                 df['trend_signal'] = df.index.map(trend_signal)
                 get_macd(df)
-                get_macd_median(df)
                 get_rsi(df)
                 get_obv(df)
                 obv_trend = df['obv'][::-1].rolling(28).apply(get_wma)
@@ -334,6 +333,8 @@ def main():
         signal = macd.ewm(span=sig, min_periods=sig).mean()
         df['macd'] = df.index.map(macd)
         df['signal'] = df.index.map(signal)
+        mean_macd = df['macd'][:-1].rolling(slow).mean()
+        df['mean_macd'] = df.index.map(mean_macd)
     
     def get_macd_median(df, period=90):
         macd_median = df['macd'][::-1].rolling(period).mean()
@@ -343,7 +344,7 @@ def main():
         buy_sig = []
         for i, row in df.iterrows():
             if (
-                row['macd'] < row['signal'] and
+                row['macd'] < row['mean_macd'] and
                 #row['macd'] < row['macd_median'] and
                 #sum(df['macd'][i-7:i]) / 7 < row['signal'] and
                 #round(abs(row['macd'] / row['signal']),2) in [float(x/100) for x in range(75, 125)] and
