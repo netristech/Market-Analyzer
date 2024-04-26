@@ -341,9 +341,10 @@ def main():
         buy_sig = []
         for i, row in df.iterrows():
             if (
-                row['macd'] < 1.0 and
-                sum(df['macd'][i-5:i]) / 5 < 1.0 and
-                round(abs(row['macd'] / row['signal']),2) in [float(x/100) for x in range(75, 125)] and
+                row['macd'] < row['macd_median'] and
+                sum(df['macd'][i-7:i]) / 7 < row['signal'] and
+                #round(abs(row['macd'] / row['signal']),2) in [float(x/100) for x in range(75, 125)] and
+                abs(row['macd'] - row['signal']) < 1 and
                 row['rsi'] < 50
             ):
                 buy_sig.append(row['value'])
