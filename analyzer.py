@@ -342,7 +342,7 @@ def main():
         for i, row in df.iterrows():
             if (
                 row['macd'] < row['macd_median'] and
-                sum(df['macd'][i-7:i]) / 7 < row['signal'] and
+                #sum(df['macd'][i-7:i]) / 7 < row['signal'] and
                 #round(abs(row['macd'] / row['signal']),2) in [float(x/100) for x in range(75, 125)] and
                 abs(row['macd'] - row['signal']) < 1 and
                 row['rsi'] < 50
