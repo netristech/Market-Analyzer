@@ -348,7 +348,7 @@ def main():
                 #sum(df['macd'][i-7:i]) / 7 < row['signal'] and
                 #round(abs(row['macd'] / row['signal']),2) in [float(x/100) for x in range(75, 125)] and
                 abs(row['macd'] - row['signal']) < 1 and
-                row['rsi'] < 50
+                row['rsi'] < row['mean_rsi']
             ):
                 buy_sig.append(row['value'])
             else:
