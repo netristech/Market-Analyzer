@@ -230,7 +230,7 @@ def main():
                 1: ['value buy_signal', 'rgba(0,0,0,0.5) rgba(32,208,112,0.9)'],
                 2: ['macd signal macd_median', 'rgba(208,128,208,0.9) rgba(128,208,248,0.9) rgba(96,224,128,0.9)'],
                 3: ['trend_wma trend_signal', 'rgba(0,64,224,0.9) rgba(32,208,112,0.9)'],
-                4: ['rsi', 'rgba(0,0,0,0.5)'],
+                4: ['rsi mean_rsi', 'rgba(0,0,0,0.5) rgba(96,24,128,0.9)'],
                 5: ['obv', 'rgba(0,0,0,0.5)'],
                 6: ['obv_trend obv_signal', 'rgba(0,64,224,0.9) rgba(32,208,112,0.9)'],
             } 
@@ -317,6 +317,8 @@ def main():
         rs = ma_up / ma_down
         rsi = 100 - (100 / (1 + rs ))
         df['rsi'] = df.index.map(rsi)
+        mean_rsi = df['rsi'][::-1].rolling(dur).mean()
+        df['mean_rsi'] = df.index.map(mean_rsi)
 
     def get_obv(df):
         # Calculate and return On-balance Volume from Pandas DataFrame
