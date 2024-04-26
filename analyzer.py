@@ -228,7 +228,7 @@ def main():
             }
             view_switch = {
                 1: ['value buy_signal', 'rgba(0,0,0,0.5) rgba(32,208,112,0.9)'],
-                2: ['macd signal', 'rgba(208,128,208,0.9) rgba(128,208,248,0.9)'],
+                2: ['macd signal macd_median', 'rgba(208,128,208,0.9) rgba(128,208,248,0.9) rgba(96,224,128,0.9)'],
                 3: ['trend_wma trend_signal', 'rgba(0,64,224,0.9) rgba(32,208,112,0.9)'],
                 4: ['rsi', 'rgba(0,0,0,0.5)'],
                 5: ['obv', 'rgba(0,0,0,0.5)'],
@@ -291,6 +291,7 @@ def main():
                 trend_signal = df['value'][::-1].ewm(span=14, min_periods=14).mean()
                 df['trend_signal'] = df.index.map(trend_signal)
                 get_macd(df)
+                get_macd_median(df)
                 get_rsi(df)
                 get_obv(df)
                 obv_trend = df['obv'][::-1].rolling(28).apply(get_wma)
@@ -331,6 +332,10 @@ def main():
         signal = macd.ewm(span=sig, min_periods=sig).mean()
         df['macd'] = df.index.map(macd)
         df['signal'] = df.index.map(signal)
+    
+    def get_macd_median(df, period=90):
+        macd_median = df['macd'][::-1].rolling(period).mean()
+        df['macd_median'] = df.index.map(macd_median)
 
     def get_buy_sig(df):
         buy_sig = []
