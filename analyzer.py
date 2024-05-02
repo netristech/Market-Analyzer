@@ -290,7 +290,7 @@ def main():
                 df['trend_wma'] = df.index.map(trend_wma)
                 trend_signal = df['value'][::-1].ewm(span=14, min_periods=14).mean()
                 df['trend_signal'] = df.index.map(trend_signal)
-                get_macd(df, fast=6, slow=13, sig=5)
+                get_macd(df)
                 get_rsi(df)
                 get_obv(df)
                 obv_trend = df['obv'][::-1].rolling(28).apply(get_wma)
