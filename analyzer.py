@@ -333,7 +333,7 @@ def main():
         signal = macd.ewm(span=sig, min_periods=sig).mean()
         df['macd'] = df.index.map(macd)
         df['signal'] = df.index.map(signal)
-        mean_macd = macd.rolling(slow * 10).mean()
+        mean_macd = macd.rolling(slow * 5).mean()
         df['mean_macd'] = df.index.map(mean_macd)
 
     def get_buy_sig(df):
