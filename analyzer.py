@@ -64,14 +64,13 @@ def main():
         dbc.InputGroup([
             html.Label("Enter symbol(s) to watch."),
             #dcc.Input(
-            html.Div(
-                dbc.Input(
-                    id='watch-tickers',
-                    placeholder='Enter symbol(s)',
-                    type='text',
-                    pattern='[A-Za-z-=^ ,]{1,6}',
-                    value=''
-                )
+            dbc.Input(
+                id='watch-tickers',
+                placeholder='Enter symbol(s)',
+                type='text',
+                pattern='[A-Za-z-=^ ,]{1,6}',
+                value='',
+                className="text-dark"
             ),
             html.Label("Graph Scale"),
             dcc.Dropdown(
