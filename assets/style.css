@@ -11,6 +11,10 @@
     margin-bottom: 30px;
 }
 
+#watch-tickers {
+    color: #333 !important
+}
+
 #sidebar .btn {
     width: 100%;
     margin-bottom: 10px;
