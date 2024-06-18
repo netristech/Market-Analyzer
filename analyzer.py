@@ -316,7 +316,7 @@ def main():
         rs = ma_up / ma_down
         rsi = 100 - (100 / (1 + rs ))
         df['rsi'] = df.index.map(rsi)
-        mean_rsi = df['rsi'][::-1].rolling(dur).mean()
+        mean_rsi = df['rsi'][::-1].rolling(dur * 6).mean()
         df['mean_rsi'] = df.index.map(mean_rsi)
 
     def get_obv(df):
