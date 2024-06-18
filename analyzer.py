@@ -63,8 +63,8 @@ def main():
     sidebar = dbc.Col([
         dbc.InputGroup([
             html.Label("Enter symbol(s) to watch."),
-            #dcc.Input(
-            dbc.Input(
+            dcc.Input(
+            #dbc.Input(
                 id='watch-tickers',
                 placeholder='Enter symbol(s)',
                 type='text',
