@@ -63,13 +63,15 @@ def main():
     sidebar = dbc.Col([
         dbc.InputGroup([
             html.Label("Enter symbol(s) to watch."),
-            dcc.Input(
-            #dbc.Input(
-                id='watch-tickers',
-                placeholder='Enter symbol(s)',
-                type='text',
-                pattern='[A-Za-z-=^ ,]{1,6}',
-                value=''
+            #dcc.Input(
+            html.Div(
+                dbc.Input(
+                    id='watch-tickers',
+                    placeholder='Enter symbol(s)',
+                    type='text',
+                    pattern='[A-Za-z-=^ ,]{1,6}',
+                    value=''
+                )
             ),
             html.Label("Graph Scale"),
             dcc.Dropdown(
