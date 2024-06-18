@@ -335,18 +335,13 @@ def main():
         df['signal'] = df.index.map(signal)
         mean_macd = macd.rolling(slow * 10).mean()
         df['mean_macd'] = df.index.map(mean_macd)
-    
-    def get_macd_median(df, period=90):
-        macd_median = df['macd'][::-1].rolling(period).mean()
-        df['macd_median'] = df.index.map(macd_median)
 
     def get_buy_sig(df):
         buy_sig = []
         for i, row in df.iterrows():
             if (
                 row['macd'] < row['mean_macd'] and
-                #row['macd'] < row['macd_median'] and
-                #sum(df['macd'][i-7:i]) / 7 < row['signal'] and
+                sum(df['macd'][i-7:i]) / 7 < row['signal'] and
                 #round(abs(row['macd'] / row['signal']),2) in [float(x/100) for x in range(75, 125)] and
                 abs(row['macd'] - row['signal']) < 1 and
                 row['rsi'] < row['mean_rsi']
