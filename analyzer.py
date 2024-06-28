@@ -317,8 +317,8 @@ def main():
         rs = ma_up / ma_down
         rsi = 100 - (100 / (1 + rs ))
         df['rsi'] = df.index.map(rsi)
-        mean_rsi = df['rsi'][::-1].rolling(dur * 6).mean()
-        df['mean_rsi'] = df.index.map(mean_rsi)
+        #mean_rsi = df['rsi'][::-1].rolling(dur * 6).mean()
+        #df['mean_rsi'] = df.index.map(mean_rsi)
 
     def get_obv(df):
         # Calculate and return On-balance Volume from Pandas DataFrame
@@ -334,14 +334,14 @@ def main():
         signal = macd.ewm(span=sig, min_periods=sig).mean()
         df['macd'] = df.index.map(macd)
         df['signal'] = df.index.map(signal)
-        mean_macd = macd.rolling(slow * 5).mean()
-        df['mean_macd'] = df.index.map(mean_macd)
+        #mean_macd = macd.rolling(slow * 5).mean()
+        #df['mean_macd'] = df.index.map(mean_macd)
 
     def get_buy_sig(df):
         buy_sig = []
         for i, row in df.iterrows():
             if (
-                row['macd'] < row['mean_macd'] and
+                #row['macd'] < row['mean_macd'] and
                 sum(df['macd'][i-7:i]) / 7 < row['signal'] and
                 #round(abs(row['macd'] / row['signal']),2) in [float(x/100) for x in range(75, 125)] and
                 abs(row['macd'] - row['signal']) < 1 and
