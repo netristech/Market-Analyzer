@@ -229,9 +229,9 @@ def main():
             }
             view_switch = {
                 1: ['value buy_signal', 'rgba(0,0,0,0.5) rgba(32,208,112,0.9)'],
-                2: ['macd signal mean_macd', 'rgba(208,128,208,0.9) rgba(128,208,248,0.9) rgba(96,224,128,0.9)'],
+                2: ['macd signal', 'rgba(208,128,208,0.9) rgba(128,208,248,0.9)'],
                 3: ['trend_wma trend_signal', 'rgba(0,64,224,0.9) rgba(32,208,112,0.9)'],
-                4: ['rsi mean_rsi', 'rgba(0,0,0,0.5) rgba(96,24,128,0.9)'],
+                4: ['rsi', 'rgba(0,0,0,0.5)'],
                 5: ['obv', 'rgba(0,0,0,0.5)'],
                 6: ['obv_trend obv_signal', 'rgba(0,64,224,0.9) rgba(32,208,112,0.9)'],
             } 
@@ -345,7 +345,7 @@ def main():
                 sum(df['macd'][i-7:i]) / 7 < row['signal'] and
                 #round(abs(row['macd'] / row['signal']),2) in [float(x/100) for x in range(75, 125)] and
                 abs(row['macd'] - row['signal']) < 1 and
-                row['rsi'] < row['mean_rsi']
+                row['rsi'] < 50
             ):
                 buy_sig.append(row['value'])
             else:
